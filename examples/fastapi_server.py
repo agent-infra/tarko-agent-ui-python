@@ -74,9 +74,6 @@ def create_app() -> FastAPI:
     try:
         static_path = get_static_path()
         app.mount("/static", StaticFiles(directory=static_path), name="static")
-        version_info = get_static_version()
-        print(f"✅ Mounted static files from: {static_path}")
-        print(f"📦 Assets version: {version_info['package']}@{version_info['version']}")
     except FileNotFoundError as e:
         handle_missing_assets(e, "startup")
     
@@ -85,19 +82,16 @@ def create_app() -> FastAPI:
 
 def main():
     """Starts the development server with asset validation."""
-    print("🚀 Starting Tarko Agent UI Server...")
-    print("📱 Open http://localhost:8000 in your browser")
-    print("🔍 Health check: http://localhost:8000/api/v1/health")
-    print("")
+    print("Starting Tarko Agent UI Server on http://localhost:8000")
     
     # Check if static assets exist
     try:
         get_static_path()
         version_info = get_static_version()
-        print(f"✅ Static assets found: {version_info['package']}@{version_info['version']}")
+        print(f"Assets: {version_info['package']}@{version_info['version']}")
     except FileNotFoundError as e:
         handle_missing_assets(e, "startup")
-        print("   Server will start but static routes will be unavailable.")
+        print("Warning: Static routes will be unavailable")
     
     # Create and run the app
     app = create_app()
