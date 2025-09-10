@@ -133,7 +133,7 @@ def main():
             "navItems": [
                 {
                     "title": "Github",
-                    "link": "https://github.com/agent-infra/agent-starter",
+                    "link": "https://github.com/agent-infra/tarko-agent-ui-python",
                     "icon": "code"
                 }
             ]
