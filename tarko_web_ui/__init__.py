@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Tarko Web UI SDK for serving static assets from @tarko/agent-ui-builder."""
+
 import os
 import tempfile
 import tarfile
@@ -8,6 +10,11 @@ import json
 import sys
 from urllib.request import urlopen
 from pathlib import Path
+from typing import Optional
+
+
+__version__ = "0.1.0"
+__all__ = ["get_static_path", "download_static_assets"]
 
 
 def get_static_path() -> str:
@@ -25,16 +32,19 @@ def get_static_path() -> str:
     if not static_dir.exists():
         raise FileNotFoundError(
             f"Static assets not found at {static_dir}. "
-            "Please run: python -c 'from agent_sandbox import download_static_assets; download_static_assets()'"
+            "Please run: python -c 'from tarko_web_ui import download_static_assets; download_static_assets()'"
         )
     
     return str(static_dir.absolute())
 
 
-def download_static_assets() -> None:
+def download_static_assets(version: Optional[str] = None) -> None:
     """Download and extract @tarko/agent-ui-builder npm package static assets.
     
-    This function downloads the latest version of @tarko/agent-ui-builder
+    Args:
+        version: Specific version to download. If None, downloads latest.
+    
+    This function downloads the specified version (or latest) of @tarko/agent-ui-builder
     from the npm registry and extracts the static assets to the local
     static directory.
     """
@@ -48,11 +58,21 @@ def download_static_assets() -> None:
         with urlopen(registry_url) as response:
             package_info = json.loads(response.read().decode())
         
-        # Get latest version tarball URL
-        latest_version = package_info["dist-tags"]["latest"]
-        tarball_url = package_info["versions"][latest_version]["dist"]["tarball"]
+        # Get version tarball URL
+        if version is None:
+            target_version = package_info["dist-tags"]["latest"]
+        else:
+            target_version = version
+            
+        if target_version not in package_info["versions"]:
+            available_versions = list(package_info["versions"].keys())
+            raise ValueError(
+                f"Version {target_version} not found. Available versions: {available_versions}"
+            )
+            
+        tarball_url = package_info["versions"][target_version]["dist"]["tarball"]
         
-        print(f"Downloading {package_name}@{latest_version}...")
+        print(f"Downloading {package_name}@{target_version}...")
         
         # Create static directory in package
         package_dir = Path(__file__).parent
@@ -87,6 +107,3 @@ def download_static_assets() -> None:
     except Exception as e:
         print(f"Error downloading npm package: {e}", file=sys.stderr)
         raise
-
-
-__all__ = ["get_static_path", "download_static_assets"]
