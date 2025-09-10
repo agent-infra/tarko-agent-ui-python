@@ -8,14 +8,15 @@ with a FastAPI application to serve the Tarko Agent UI.
 """
 
 from pathlib import Path
+from typing import Dict, Any, Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse
 
 try:
-    from tarko_agent_ui import get_static_path, get_static_version
+    from tarko_agent_ui import get_static_path, get_static_version, inject_env_variables
 except ImportError:
     print("❌ Error: tarko_agent_ui package not found.")
     print("💡 Install it with: uv add tarko-agent-ui")
@@ -40,17 +41,25 @@ def handle_missing_assets(e: FileNotFoundError, context: str = "api") -> None:
         print(f"💡 {suggestion}")
 
 
-def create_app() -> FastAPI:
-    """Creates FastAPI app with static asset routing and health endpoints."""
+def create_app(
+    base_url: str = "",
+    ui_config: Optional[Dict[str, Any]] = None
+) -> FastAPI:
+    """Creates FastAPI app with static asset routing and health endpoints.
+    
+    Args:
+        base_url: Agent API base URL for environment injection
+        ui_config: UI configuration object for environment injection
+    """
     app = FastAPI(
         title="Tarko Agent UI Server",
         description="FastAPI server for serving Tarko Agent UI Builder static assets",
         version="0.1.0"
     )
     
-    @app.get("/")
+    @app.get("/", response_class=HTMLResponse)
     async def root():
-        """Serves the main UI application."""
+        """Serves the main UI application with injected environment variables."""
         try:
             static_path = get_static_path()
             index_file = Path(static_path) / "index.html"
@@ -61,9 +70,22 @@ def create_app() -> FastAPI:
                     "api"
                 )
             
-            return FileResponse(str(index_file))
+            # Read HTML content and inject environment variables
+            html_content = index_file.read_text(encoding="utf-8")
+            modified_html = inject_env_variables(
+                html_content=html_content,
+                base_url=base_url,
+                ui_config=ui_config
+            )
+            
+            return HTMLResponse(content=modified_html)
         except FileNotFoundError as e:
             handle_missing_assets(e, "api")
+        except ValueError as e:
+            raise HTTPException(
+                status_code=500,
+                detail={"error": f"HTML injection failed: {str(e)}"}
+            )
     
     @app.get("/api/v1/health")
     async def health_check():
@@ -93,8 +115,20 @@ def main():
         handle_missing_assets(e, "startup")
         print("Warning: Static routes will be unavailable")
     
-    # Create and run the app
-    app = create_app()
+    # Example configuration - customize as needed
+    example_ui_config = {
+        "theme": "dark",
+        "features": {
+            "chat": True,
+            "workspace": True
+        }
+    }
+    
+    # Create and run the app with environment injection
+    app = create_app(
+        base_url="http://localhost:8000/api",
+        ui_config=example_ui_config
+    )
     
     uvicorn.run(
         app,
