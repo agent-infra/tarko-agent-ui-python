@@ -59,6 +59,7 @@ dev-dependencies = [
     "uvicorn[standard]>=0.15.0",
     "httpx>=0.24.0",
     "requests>=2.25.0",
+    "types-requests>=2.25.0",
 ]
 
 [tool.pytest.ini_options]
