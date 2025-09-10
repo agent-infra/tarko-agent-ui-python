@@ -9,7 +9,7 @@ description = "Python SDK for managing Tarko Agent UI Builder static assets"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
-    {name = "Tarko Team", email = "team@tarko.ai"}
+    {name = "ULIVZ", email = "chenhaoli@bytedance.com"}
 ]
 classifiers = [
     "Development Status :: 3 - Alpha",
