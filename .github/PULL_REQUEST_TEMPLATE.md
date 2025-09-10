@@ -1,34 +1,24 @@
 ## Summary
 
-<!-- Brief description of changes in one line -->
+<!--------------------------------------------------------------------------------
+    Can you explain the reasoning behind implementing this change?  
+    What problem or issue does this pull request resolve?  
 
-## Type of Change
+    It would be helpful to include relevant context, such as GitHub issues 
+    (e.g., Close: #xxx) or related discussions.
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Documentation update
-- [ ] Performance improvement
-- [ ] Code refactoring
+    If updating the UI, please include a **before/after screenshot** for visibility.
+    Thank you for reading. Next, start describing your Summary on the next line
+    after the comment ends. 👇🏻
+-------------------------------------------------------------------------------->
 
-## Testing
 
-- [ ] Tests pass locally
-- [ ] New tests added for new functionality
-- [ ] Existing tests updated if needed
-- [ ] Manual testing completed
 
-## Code Quality
+## Checklist  
 
-- [ ] Code follows project style guidelines
-- [ ] Self-review completed
-- [ ] Code is properly documented
-- [ ] No unnecessary files included
+<!--  Before submitting the pull request, ensure the following items are checked: -->
 
-## Breaking Changes
-
-<!-- If this is a breaking change, describe what breaks and how to migrate -->
-
-## Additional Notes
-
-<!-- Any additional information, context, or screenshots -->
+- [ ] Added or updated necessary tests (Optional).  
+- [ ] Updated documentation to align with changes (Optional).  
+- [ ] Verified no breaking changes, or prepared solutions for any occurring breaking changes (Optional).  
+- [ ] My change does not involve the above items.

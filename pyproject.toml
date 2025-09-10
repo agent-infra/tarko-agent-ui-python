@@ -46,13 +46,11 @@ include = [
     "/tarko_agent_ui",
     "/scripts",
     "/README.md",
-    "/py.typed",
     "/pyproject.toml",
     "/MANIFEST.in",
 ]
 
-[tool.hatch.build.targets.wheel.force-include]
-"py.typed" = "tarko_agent_ui/py.typed"
+
 
 [tool.uv]
 dev-dependencies = [
