@@ -1,6 +1,4 @@
 include README.md
-include LICENSE
-include CHANGELOG.md
 include py.typed
 include pyproject.toml
 include scripts/build_assets.py

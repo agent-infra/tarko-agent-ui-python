@@ -37,8 +37,6 @@ dependencies = [
 Homepage = "https://github.com/agent-infra/tarko-agent-ui-python"
 Repository = "https://github.com/agent-infra/tarko-agent-ui-python"
 "Bug Tracker" = "https://github.com/agent-infra/tarko-agent-ui-python/issues"
-Documentation = "https://github.com/agent-infra/tarko-agent-ui-python#readme"
-Changelog = "https://github.com/agent-infra/tarko-agent-ui-python/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["tarko_agent_ui"]
@@ -48,8 +46,6 @@ include = [
     "/tarko_agent_ui",
     "/scripts",
     "/README.md",
-    "/LICENSE",
-    "/CHANGELOG.md",
     "/py.typed",
     "/pyproject.toml",
     "/MANIFEST.in",
