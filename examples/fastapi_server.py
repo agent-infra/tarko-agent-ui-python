@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
 try:
-    from tarko_agent_ui import get_static_path, get_static_version, inject_env_variables
+    from tarko_agent_ui import get_static_path, get_static_version, get_agent_ui_html
 except ImportError:
     print("❌ Error: tarko_agent_ui package not found.")
     print("💡 Install it with: uv add tarko-agent-ui")
@@ -61,24 +61,11 @@ def create_app(
     async def root():
         """Serves the main UI application with injected environment variables."""
         try:
-            static_path = get_static_path()
-            index_file = Path(static_path) / "index.html"
-            
-            if not index_file.exists():
-                handle_missing_assets(
-                    FileNotFoundError("index.html not found in static assets"), 
-                    "api"
-                )
-            
-            # Read HTML content and inject environment variables
-            html_content = index_file.read_text(encoding="utf-8")
-            modified_html = inject_env_variables(
-                html_content=html_content,
+            html_content = get_agent_ui_html(
                 base_url=base_url,
                 ui_config=ui_config
             )
-            
-            return HTMLResponse(content=modified_html)
+            return HTMLResponse(content=html_content)
         except FileNotFoundError as e:
             handle_missing_assets(e, "api")
         except ValueError as e:

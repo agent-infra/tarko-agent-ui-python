@@ -16,7 +16,7 @@ except ImportError:
 
 
 __version__ = "0.3.0b11"
-__all__ = ["get_static_path", "get_static_version", "inject_env_variables"]
+__all__ = ["get_static_path", "get_static_version", "get_agent_ui_html"]
 
 
 def get_static_path() -> str:
@@ -98,3 +98,34 @@ def inject_env_variables(
     )
     
     return modified_html
+
+
+def get_agent_ui_html(
+    base_url: str = "",
+    ui_config: Optional[Dict[str, Any]] = None
+) -> str:
+    """Returns configured Agent UI HTML content.
+    
+    Args:
+        base_url: Agent API base URL (defaults to empty string)
+        ui_config: UI configuration object (defaults to empty dict)
+        
+    Returns:
+        HTML content with injected environment variables
+        
+    Raises:
+        FileNotFoundError: When static assets are missing
+        ValueError: If HTML content doesn't contain a valid head section
+    """
+    static_path = get_static_path()
+    index_file = Path(static_path) / "index.html"
+    
+    if not index_file.exists():
+        raise FileNotFoundError("index.html not found in static assets")
+    
+    html_content = index_file.read_text(encoding="utf-8")
+    return inject_env_variables(
+        html_content=html_content,
+        base_url=base_url,
+        ui_config=ui_config
+    )
