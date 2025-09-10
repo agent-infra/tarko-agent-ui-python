@@ -83,14 +83,4 @@ The release script automatically:
 
 5. **Publishing**: Builds and publishes to PyPI with proper git tagging
 
-### Manual Publishing (Advanced)
 
-```bash
-# Manual step-by-step process
-uv run python scripts/build_assets.py --version "0.3.0-beta.9"
-uv run pytest
-uv build
-uv publish
-git tag v0.3.0b9
-git push origin main --tags
-```
