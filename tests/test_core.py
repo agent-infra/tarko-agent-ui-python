@@ -50,7 +50,7 @@ class TestGetStaticVersion:
         assert "package" in version_info
         assert "sdk_version" in version_info
         assert version_info["package"] == "@tarko/agent-ui-builder"
-        assert version_info["sdk_version"] == "0.3.0b11"
+        assert version_info["sdk_version"] == "0.3.0b12"
 
 
 class TestInjectEnvVariables:
