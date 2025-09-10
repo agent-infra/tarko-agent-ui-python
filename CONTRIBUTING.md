@@ -41,9 +41,46 @@ uv build
 uv publish
 ```
 
-## Automated Release
+## Release Management
+
+### Automated Release (Latest Version)
 
 ```bash
-# Auto-bump version and publish when @tarko/agent-ui-builder updates
+# Auto-detect and publish latest @tarko/agent-ui-builder version
 uv run python scripts/auto_release.py
+
+# Preview what would be done without executing
+uv run python scripts/auto_release.py --dry-run
 ```
+
+### Manual Release (Specific Version)
+
+```bash
+# Release a specific npm version
+uv run python scripts/auto_release.py --version "0.3.0-beta.9"
+
+# Preview specific version release
+uv run python scripts/auto_release.py --version "0.3.0-beta.10" --dry-run
+```
+
+### Release Process
+
+The release script automatically:
+
+1. **Version Management**: Converts npm version format to Python format
+   - `0.3.0-beta.11` → `0.3.0b11`
+   - `0.3.0-alpha.5` → `0.3.0a5`
+   - `1.0.0` → `1.0.0`
+
+2. **File Updates**: Updates version in all relevant files:
+   - `pyproject.toml`
+   - `tarko_agent_ui/__init__.py`
+   - `tests/test_core.py`
+
+3. **Asset Management**: Downloads specified version of static assets
+
+4. **Quality Assurance**: Runs tests before publishing
+
+5. **Publishing**: Builds and publishes to PyPI with proper git tagging
+
+
