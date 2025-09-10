@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Tarko Web UI SDK for serving static assets from @tarko/agent-ui-builder."""
+"""Tarko Web UI SDK for managing static assets from @tarko/agent-ui-builder."""
 
 import os
 import tempfile

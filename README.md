@@ -1,154 +1,153 @@
-# Tarko Web UI
+# Tarko Web UI SDK
 
-Python SDK and FastAPI server for serving static web assets from [`@tarko/agent-ui-builder`](https://www.npmjs.com/package/@tarko/agent-ui-builder).
+Minimal Python SDK for managing static assets from [`@tarko/agent-ui-builder`](https://www.npmjs.com/package/@tarko/agent-ui-builder).
+
+## Philosophy
+
+This package does **one thing well**: manages static assets from the npm package. It provides a clean API for other packages to consume these assets without imposing any server implementation.
 
 ## Quick Start
 
 ```bash
-# Install with uv (recommended)
+# Install the SDK
 uv add tarko-web-ui
+# or: pip install tarko-web-ui
 
-# Or with pip
-pip install tarko-web-ui
-
-# Download static assets
-tarko-web-ui download
-
-# Start the server
-tarko-web-ui serve
+# Use in your code
+python -c "from tarko_web_ui import download_static_assets; download_static_assets()"
 ```
 
-Visit http://localhost:8000 to access the Tarko Agent UI.
+## Core API
 
-## Features
+### `get_static_path() -> str`
 
-- 🚀 **Modern Python packaging** with `uv` and `pyproject.toml`
-- 📦 **Clean API**: `get_static_path()` for easy integration
-- 🌐 **Built-in server**: FastAPI server with CLI commands
-- 🔧 **Flexible deployment**: Use as SDK or standalone server
-- ⚡ **Fast setup**: Automatic asset download during build
-
-## Installation
-
-### Using uv (recommended)
-
-```bash
-uv add tarko-web-ui
-```
-
-### Using pip
-
-```bash
-pip install tarko-web-ui
-```
-
-## CLI Usage
-
-```bash
-# Download static assets
-tarko-web-ui download
-
-# Download specific version
-tarko-web-ui download --version 0.3.0-beta.11
-
-# Show static assets path
-tarko-web-ui path
-
-# Start development server
-tarko-web-ui serve
-
-# Start server with custom settings
-tarko-web-ui serve --host 127.0.0.1 --port 3000 --reload
-```
-
-## SDK Usage
+Returns the absolute path to downloaded static assets.
 
 ```python
-from tarko_web_ui import get_static_path, download_static_assets
+from tarko_web_ui import get_static_path
 
-# Get static assets path
 static_path = get_static_path()
-print(f"Static assets: {static_path}")
+print(f"Assets at: {static_path}")
+```
 
-# Download assets programmatically
+**Raises:** `FileNotFoundError` if assets haven't been downloaded
+
+### `download_static_assets(version: Optional[str] = None) -> None`
+
+Downloads and extracts static assets from npm registry.
+
+```python
+from tarko_web_ui import download_static_assets
+
+# Download latest version
 download_static_assets()
 
 # Download specific version
 download_static_assets(version="0.3.0-beta.11")
 ```
 
-## FastAPI Integration
-
-```python
-from tarko_web_ui.server import create_app
-import uvicorn
-
-# Create FastAPI app
-app = create_app()
-
-# Run with uvicorn
-uvicorn.run(app, host="0.0.0.0", port=8000)
-```
-
-## Project Structure
-
-```
-├── tarko_web_ui/           # Main package
-│   ├── __init__.py        # Core SDK functions
-│   ├── cli.py             # CLI commands
-│   ├── server.py          # FastAPI server
-│   └── static/            # Downloaded assets (auto-created)
-├── examples/
-│   └── fastapi_server.py  # Simple server example
-├── pyproject.toml         # Modern Python config with uv support
-├── build_hook.py          # Build-time asset download
-└── README.md
-```
-
-## API Reference
-
-### `get_static_path() -> str`
-
-Returns absolute path to static assets directory.
-
-**Raises:** `FileNotFoundError` if assets not downloaded
-
-### `download_static_assets(version: Optional[str] = None) -> None`
-
-Downloads and extracts static assets from npm registry.
-
 **Args:**
 - `version`: Specific version to download (default: latest)
 
 **Raises:** `Exception` if download fails
 
+## Integration Examples
+
+### FastAPI
+
+```python
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from tarko_web_ui import get_static_path
+
+app = FastAPI()
+static_path = get_static_path()
+app.mount("/static", StaticFiles(directory=static_path))
+```
+
+### Flask
+
+```python
+from flask import Flask, send_from_directory
+from tarko_web_ui import get_static_path
+
+app = Flask(__name__)
+static_path = get_static_path()
+
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory(static_path, filename)
+```
+
+### Django
+
+```python
+# settings.py
+from tarko_web_ui import get_static_path
+
+STATICFILES_DIRS = [
+    get_static_path(),
+]
+```
+
+## Examples
+
+See the [`examples/`](examples/) directory:
+
+- [`simple_usage.py`](examples/simple_usage.py) - Basic SDK usage
+- [`fastapi_server.py`](examples/fastapi_server.py) - Complete FastAPI integration
+
+```bash
+# Run the simple example
+python examples/simple_usage.py
+
+# Run the FastAPI server
+uv run --with fastapi --with uvicorn python examples/fastapi_server.py
+```
+
+## Project Structure
+
+```
+├── tarko_web_ui/           # Core SDK package
+│   ├── __init__.py        # Main API: get_static_path(), download_static_assets()
+│   └── static/            # Downloaded assets (auto-created)
+├── examples/              # Integration examples
+│   ├── simple_usage.py    # Basic usage demo
+│   └── fastapi_server.py  # Complete FastAPI server
+├── pyproject.toml         # Modern Python config
+├── uv.lock               # Reproducible dependencies
+└── README.md
+```
+
 ## Development
 
 ```bash
-# Clone repository
+# Clone and setup
 git clone https://github.com/agent-infra/tarko-agent-ui-fastapi-example.git
 cd tarko-agent-ui-fastapi-example
 
-# Install with uv
+# Install with development dependencies
 uv sync
 
-# Or create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -e .
+# Download static assets
+python -c "from tarko_web_ui import download_static_assets; download_static_assets()"
 
-# Download assets
-tarko-web-ui download
-
-# Run example
+# Run examples
+python examples/simple_usage.py
 python examples/fastapi_server.py
 ```
+
+## Design Principles
+
+- **Single Responsibility**: Only manages static assets
+- **Framework Agnostic**: Works with FastAPI, Flask, Django, etc.
+- **Minimal Dependencies**: Zero runtime dependencies
+- **Developer Friendly**: Clear error messages and examples
 
 ## Requirements
 
 - Python 3.8+
 - Internet connection (for downloading npm package)
-- FastAPI and Uvicorn (automatically installed)
 
 ## License
 
