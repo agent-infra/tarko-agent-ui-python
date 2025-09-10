@@ -161,9 +161,10 @@ Returns absolute path to bundled static assets for mounting in web frameworks.
 
 ## How It Works
 
-1. **Zero Dependencies**: Static assets are pre-bundled with the Python package
-2. **Framework Agnostic**: Returns HTML strings that work with any Python web framework
-3. **No Runtime Downloads**: Everything works offline after installation
+1. **Zero Dependencies**: Pure Python package with no external dependencies
+2. **Pre-bundled Assets**: Static assets are included with the package
+3. **Framework Agnostic**: Returns HTML strings that work with any Python web framework
+4. **No Runtime Downloads**: Everything works offline after installation
 
 ## Backend Integration
 
