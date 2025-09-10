@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Complete FastAPI example using tarko_web_ui SDK.
+"""Complete FastAPI example using tarko_agent_ui SDK.
 
-This example demonstrates how to integrate the tarko_web_ui SDK
+This example demonstrates how to integrate the tarko_agent_ui SDK
 with a FastAPI application to serve the Tarko Agent UI.
 """
 
-import os
 from pathlib import Path
-from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException
@@ -58,12 +56,9 @@ def create_app() -> FastAPI:
             index_file = Path(static_path) / "index.html"
             
             if not index_file.exists():
-                raise HTTPException(
-                    status_code=404, 
-                    detail={
-                        "error": "index.html not found in static assets",
-                        "suggestion": "Run 'python scripts/build_assets.py' to build static assets"
-                    }
+                handle_missing_assets(
+                    FileNotFoundError("index.html not found in static assets"), 
+                    "api"
                 )
             
             return FileResponse(str(index_file))

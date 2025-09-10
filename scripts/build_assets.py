@@ -6,7 +6,6 @@ This script downloads the specified version of @tarko/agent-ui-builder
 and packages it with the Python distribution.
 """
 
-import os
 import sys
 import json
 import tempfile
