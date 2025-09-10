@@ -2,60 +2,75 @@
 
 Python SDK for serving [`@tarko/agent-ui-builder`](https://www.npmjs.com/package/@tarko/agent-ui-builder) static assets.
 
-## Installation
+## Quick Start
 
 ```bash
-# Install from PyPI
 pip install tarko-agent-ui
-
 # Or with uv
 uv add tarko-agent-ui
 ```
 
-## Quick Start
-
-### Option 1: Use the Package Directly
-
 ```python
-from tarko_agent_ui import get_static_path
+# Create app.py
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse
+from tarko_agent_ui import get_agent_ui_html
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory=get_static_path()))
+
+@app.get("/")
+def home():
+    return HTMLResponse(get_agent_ui_html(
+        base_url="http://localhost:8000/api"
+    ))
+
+# Run: uvicorn app:app
+# Visit: http://localhost:8000
 ```
 
-### Option 2: Try the Example
+**That's it!** You now have a fully functional Agent UI.
 
-```bash
-# 1. Clone the example repository
-git clone https://github.com/agent-infra/tarko-agent-ui-python.git
-cd tarko-agent-ui-python
-uv sync
+## Configuration
 
-# 2. Run the demo server
-python3 examples/fastapi_server.py
-# Open http://localhost:8000
-```
-
-## Core API
+Customize your Agent UI with the `ui_config` parameter:
 
 ```python
-from tarko_agent_ui import get_static_path, get_agent_ui_html
-
-# Get path to static files (for mounting in your web framework)
-static_path = get_static_path()
-
-# Get configured Agent UI HTML (recommended)
-html_content = get_agent_ui_html(
-    base_url="http://localhost:8000/api",
-    ui_config={"title": "My Agent", "logo": "logo.png"}
+get_agent_ui_html(
+    base_url="http://localhost:8000/api",  # Your agent API endpoint
+    ui_config={
+        "title": "My Agent",
+        "logo": "https://example.com/logo.png",
+        "subtitle": "AI assistant for your needs",
+        "welcomePrompts": [
+            "What can you help me with?",
+            "Tell me about your capabilities",
+            "Show me an example"
+        ]
+    }
 )
 ```
 
-## Framework Integration
+## Environment Variables
 
-### FastAPI
+Use environment variables for flexible deployment:
+
+```bash
+AGENT_BASE_URL=http://my-agent.com/api python app.py
+```
+
+```python
+import os
+from tarko_agent_ui import get_agent_ui_html
+
+base_url = os.getenv("AGENT_BASE_URL", "http://localhost:8000/api")
+html = get_agent_ui_html(base_url=base_url)
+```
+
+## Framework Examples
+
+<details>
+<summary><strong>FastAPI</strong> (click to expand)</summary>
+
 ```python
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -67,14 +82,16 @@ app.mount("/static", StaticFiles(directory=get_static_path()))
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
-    html_content = get_agent_ui_html(
+    return HTMLResponse(get_agent_ui_html(
         base_url="http://localhost:8000/api",
-        ui_config={"title": "My Agent", "logo": "logo.png"}
-    )
-    return HTMLResponse(content=html_content)
+        ui_config={"title": "FastAPI Agent"}
+    ))
 ```
+</details>
 
-### Flask
+<details>
+<summary><strong>Flask</strong> (click to expand)</summary>
+
 ```python
 from flask import Flask, send_from_directory
 from tarko_agent_ui import get_static_path, get_agent_ui_html
@@ -85,25 +102,75 @@ app = Flask(__name__)
 def root():
     return get_agent_ui_html(
         base_url="http://localhost:5000/api",
-        ui_config={"title": "My Agent", "logo": "logo.png"}
+        ui_config={"title": "Flask Agent"}
     )
 
 @app.route('/static/<path:filename>')
 def static_files(filename):
     return send_from_directory(get_static_path(), filename)
 ```
+</details>
+
+<details>
+<summary><strong>Django</strong> (click to expand)</summary>
+
+```python
+# views.py
+from django.http import HttpResponse
+from tarko_agent_ui import get_agent_ui_html
+
+def home(request):
+    html = get_agent_ui_html(
+        base_url="http://localhost:8000/api",
+        ui_config={"title": "Django Agent"}
+    )
+    return HttpResponse(html)
+```
+</details>
+
+## Complete Example
+
+See [`examples/fastapi_server.py`](examples/fastapi_server.py) for a production-ready FastAPI server with:
+- Comprehensive UI configuration
+- Error handling
+- Health checks
+- Environment variable support
+
+```bash
+# Try the example
+git clone https://github.com/agent-infra/tarko-agent-ui-python.git
+cd tarko-agent-ui-python
+uv sync
+python examples/fastapi_server.py
+```
+
+## API Reference
+
+### `get_agent_ui_html(base_url, ui_config=None)`
+
+Returns configured Agent UI HTML content.
+
+**Parameters:**
+- `base_url` (str): Agent API base URL
+- `ui_config` (dict, optional): UI configuration object
+
+**Returns:** HTML string ready for serving
+
+### `get_static_path()`
+
+Returns absolute path to bundled static assets for mounting in web frameworks.
 
 ## How It Works
 
-1. **Package Installation**: Static assets are bundled with the Python package
-2. **Runtime**: `get_static_path()` returns local path to pre-built assets
-3. **Zero Overhead**: No runtime downloads, no npm dependencies
+1. **Zero Dependencies**: Static assets are pre-bundled with the Python package
+2. **Framework Agnostic**: Returns HTML strings that work with any Python web framework
+3. **No Runtime Downloads**: Everything works offline after installation
 
-## Examples
+## Backend Integration
 
-- [`examples/fastapi_server.py`](examples/fastapi_server.py) - Complete FastAPI server with health check
+To connect your Agent backend, implement the [Agent API Protocol](https://github.com/agent-infra/agent-protocol) (documentation coming soon).
 
 ## Requirements
 
 - Python 3.8+
-- Internet connection (for building assets)
+- Any Python web framework (FastAPI, Flask, Django, etc.)
