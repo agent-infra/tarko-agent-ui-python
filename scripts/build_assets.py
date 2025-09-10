@@ -33,7 +33,7 @@ def download_npm_package(version: Optional[str] = None, target_dir: Path = None)
         # Default to package static directory
         script_dir = Path(__file__).parent
         project_root = script_dir.parent
-        target_dir = project_root / "tarko_web_ui" / "static"
+        target_dir = project_root / "tarko_agent_ui" / "static"
     
     print(f"🔍 Fetching package info for {package_name}...")
     
@@ -97,7 +97,7 @@ def create_version_file(version: str, target_dir: Path = None) -> None:
     if target_dir is None:
         script_dir = Path(__file__).parent
         project_root = script_dir.parent
-        target_dir = project_root / "tarko_web_ui"
+        target_dir = project_root / "tarko_agent_ui"
     
     version_file = target_dir / "_static_version.py"
     
@@ -129,7 +129,7 @@ def main():
     parser.add_argument(
         "--output", 
         type=Path, 
-        help="Output directory (default: tarko_web_ui/static)"
+        help="Output directory (default: tarko_agent_ui/static)"
     )
     
     args = parser.parse_args()

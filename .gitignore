@@ -144,9 +144,9 @@ dmypy.json
 .vscode/
 
 # Built static assets (use scripts/build_assets.py to rebuild)
-# Note: These are included in package distribution
-# tarko_web_ui/static/
-# tarko_web_ui/_static_version.py
+# Note: These are downloaded artifacts, not source code
+tarko_agent_ui/static/
+tarko_agent_ui/_static_version.py
 
 # UV lock file
 uv.lock
