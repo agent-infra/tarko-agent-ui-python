@@ -42,18 +42,37 @@ def get_current_python_version() -> Optional[str]:
         return None
 
 
-def bump_version(current_version: str, target_version: str) -> str:
-    """Generate new Python package version based on npm version."""
-    # Use npm version as base, add beta suffix if needed
-    if "beta" in current_version or "b" in current_version:
-        # Extract beta number and increment
-        beta_match = re.search(r"b(\d+)$", current_version)
-        if beta_match:
-            beta_num = int(beta_match.group(1)) + 1
-            return f"{target_version}b{beta_num}"
+def normalize_npm_version_to_python(npm_version: str) -> str:
+    """Convert npm version format to Python version format.
 
-    # Default to beta1 for new versions
-    return f"{target_version}b1"
+    Examples:
+        0.3.0-beta.11 -> 0.3.0b11
+        0.3.0-alpha.5 -> 0.3.0a5
+        1.0.0 -> 1.0.0
+    """
+    # Handle beta versions: 0.3.0-beta.11 -> 0.3.0b11
+    if "-beta." in npm_version:
+        base, beta_num = npm_version.split("-beta.")
+        return f"{base}b{beta_num}"
+
+    # Handle alpha versions: 0.3.0-alpha.5 -> 0.3.0a5
+    if "-alpha." in npm_version:
+        base, alpha_num = npm_version.split("-alpha.")
+        return f"{base}a{alpha_num}"
+
+    # Handle rc versions: 0.3.0-rc.1 -> 0.3.0rc1
+    if "-rc." in npm_version:
+        base, rc_num = npm_version.split("-rc.")
+        return f"{base}rc{rc_num}"
+
+    # Regular version: 1.0.0 -> 1.0.0
+    return npm_version
+
+
+def should_update_version(current_python_version: str, npm_version: str) -> bool:
+    """Check if Python package should be updated based on npm version."""
+    target_python_version = normalize_npm_version_to_python(npm_version)
+    return current_python_version != target_python_version
 
 
 def update_version_in_pyproject(new_version: str) -> bool:
@@ -105,12 +124,12 @@ def main():
     print(f"🐍 Current Python version: {current_version}")
 
     # Check if update needed
-    if npm_version in current_version:
+    if not should_update_version(current_version, npm_version):
         print("✅ Already up to date!")
         return
 
-    # Generate new version
-    new_version = bump_version(current_version, npm_version)
+    # Generate new version (direct mapping)
+    new_version = normalize_npm_version_to_python(npm_version)
     print(f"🔄 New version: {new_version}")
 
     # Confirm release
