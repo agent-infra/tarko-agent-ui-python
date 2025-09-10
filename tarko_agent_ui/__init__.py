@@ -2,8 +2,10 @@
 
 """Tarko Web UI SDK for managing static assets from @tarko/agent-ui-builder."""
 
+import json
+import re
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Dict, Any
 
 try:
     from ._static_version import STATIC_ASSETS_VERSION, STATIC_ASSETS_PACKAGE
@@ -14,7 +16,7 @@ except ImportError:
 
 
 __version__ = "0.3.0b11"
-__all__ = ["get_static_path", "get_static_version"]
+__all__ = ["get_static_path", "get_static_version", "inject_env_variables"]
 
 
 def get_static_path() -> str:
@@ -52,3 +54,47 @@ def get_static_version() -> dict:
         "package": STATIC_ASSETS_PACKAGE,
         "sdk_version": __version__
     }
+
+
+def inject_env_variables(
+    html_content: str,
+    base_url: str = "",
+    ui_config: Optional[Dict[str, Any]] = None
+) -> str:
+    """Injects environment variables into HTML head section.
+    
+    Args:
+        html_content: The HTML content to modify
+        base_url: Agent API base URL (defaults to empty string)
+        ui_config: UI configuration object (defaults to empty dict)
+        
+    Returns:
+        Modified HTML content with injected environment variables
+        
+    Raises:
+        ValueError: If HTML content doesn't contain a valid head section
+    """
+    if ui_config is None:
+        ui_config = {}
+    
+    script_tag = f'''<script>
+      window.AGENT_BASE_URL = {json.dumps(base_url)};
+      window.AGENT_WEB_UI_CONFIG = {json.dumps(ui_config)};
+      console.log("Agent: Using API baseURL:", window.AGENT_BASE_URL);
+    </script>'''
+    
+    head_pattern = r'(<head[^>]*>)'
+    match = re.search(head_pattern, html_content, re.IGNORECASE)
+    
+    if not match:
+        raise ValueError("HTML content must contain a valid <head> section")
+    
+    injection_point = match.end()
+    
+    modified_html = (
+        html_content[:injection_point] +
+        "\n    " + script_tag + "\n" +
+        html_content[injection_point:]
+    )
+    
+    return modified_html

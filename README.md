@@ -41,10 +41,18 @@ python3 examples/fastapi_server.py
 ## Core API
 
 ```python
-from tarko_agent_ui import get_static_path
+from tarko_agent_ui import get_static_path, inject_env_variables
 
 # Get path to static files (for mounting in your web framework)
 static_path = get_static_path()
+
+# Inject environment variables into HTML
+html_content = "<html><head></head><body></body></html>"
+modified_html = inject_env_variables(
+    html_content=html_content,
+    base_url="http://localhost:8000/api",
+    ui_config={"title": "My Agent", "logo": "logo.png"}
+)
 ```
 
 ## Framework Integration
@@ -53,10 +61,24 @@ static_path = get_static_path()
 ```python
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from tarko_agent_ui import get_static_path
+from fastapi.responses import HTMLResponse
+from tarko_agent_ui import get_static_path, inject_env_variables
+from pathlib import Path
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=get_static_path()))
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    # Read and inject environment variables into HTML
+    index_file = Path(get_static_path()) / "index.html"
+    html_content = index_file.read_text(encoding="utf-8")
+    
+    return inject_env_variables(
+        html_content=html_content,
+        base_url="http://localhost:8000/api",
+        ui_config={"title": "My Agent", "logo": "logo.png"}
+    )
 ```
 
 ### Flask
