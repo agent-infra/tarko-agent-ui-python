@@ -61,7 +61,7 @@ class TestInjectEnvVariables:
         html = "<html><head></head><body></body></html>"
         result = inject_env_variables(html, "http://api.example.com")
 
-        assert "window.AGENT_BASE_URL = \"http://api.example.com\"" in result
+        assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
         assert "window.AGENT_WEB_UI_CONFIG = {}" in result
 
     def test_inject_with_ui_config(self):
@@ -70,7 +70,7 @@ class TestInjectEnvVariables:
         ui_config = {"title": "Test Agent"}
         result = inject_env_variables(html, "http://api.example.com", ui_config)
 
-        assert "window.AGENT_BASE_URL = \"http://api.example.com\"" in result
+        assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
         assert '"title": "Test Agent"' in result
 
     def test_inject_missing_head_raises_error(self):
@@ -101,7 +101,7 @@ class TestGetAgentUIHTML:
 
             result = get_agent_ui_html("http://api.example.com", {"title": "Test"})
 
-            assert "window.AGENT_BASE_URL = \"http://api.example.com\"" in result
+            assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
             assert '"title": "Test"' in result
             assert "Test UI" in result
 

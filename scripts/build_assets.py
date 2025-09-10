@@ -24,7 +24,9 @@ def get_project_paths() -> tuple[Path, Path]:
     return project_root, package_dir
 
 
-def download_npm_package(version: Optional[str] = None, target_dir: Optional[Path] = None) -> str:
+def download_npm_package(
+    version: Optional[str] = None, target_dir: Optional[Path] = None
+) -> str:
     """Downloads and extracts npm package to target directory.
 
     Args:
