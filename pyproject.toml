@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "tarko-web-ui"
 version = "0.1.0"
-description = "Python SDK for serving Tarko Agent UI Builder static assets"
+description = "Python SDK for managing Tarko Agent UI Builder static assets"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [
@@ -22,19 +22,30 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-dependencies = [
-    "fastapi>=0.68.0",
-    "uvicorn[standard]>=0.15.0",
-]
+dependencies = []
 
 [project.urls]
 Homepage = "https://github.com/agent-infra/tarko-agent-ui-fastapi-example"
 Repository = "https://github.com/agent-infra/tarko-agent-ui-fastapi-example"
 
-[project.scripts]
-tarko-web-ui = "tarko_web_ui.cli:main"
 
 
+
+
+[tool.hatch.build.targets.wheel]
+include = [
+    "tarko_web_ui/**/*.py",
+    "tarko_web_ui/static/**/*",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "tarko_web_ui/**/*.py",
+    "tarko_web_ui/static/**/*",
+    "scripts/build_assets.py",
+    "README.md",
+    "pyproject.toml",
+]
 
 [tool.uv]
 dev-dependencies = [
@@ -42,4 +53,6 @@ dev-dependencies = [
     "black>=22.0.0",
     "isort>=5.0.0",
     "mypy>=1.0.0",
+    "fastapi>=0.68.0",
+    "uvicorn[standard]>=0.15.0",
 ]
