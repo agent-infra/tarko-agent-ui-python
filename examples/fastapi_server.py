@@ -17,11 +17,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 try:
-    from tarko_web_ui import get_static_path, get_static_version
+    from tarko_agent_ui import get_static_path, get_static_version
 except ImportError:
-    print("❌ Error: tarko_web_ui package not found.")
-    print("💡 Install it with: uv add tarko-web-ui")
-    print("💡 Or with pip: pip install tarko-web-ui")
+    print("❌ Error: tarko_agent_ui package not found.")
+    print("💡 Install it with: uv add tarko-agent-ui")
+    print("💡 Or with pip: pip install tarko-agent-ui")
     exit(1)
 
 

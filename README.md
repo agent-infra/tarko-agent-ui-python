@@ -6,10 +6,10 @@ Python SDK for serving [`@tarko/agent-ui-builder`](https://www.npmjs.com/package
 
 ```bash
 # Install from PyPI
-pip install tarko-web-ui
+pip install tarko-agent-ui
 
 # Or with uv
-uv add tarko-web-ui
+uv add tarko-agent-ui
 ```
 
 ## Quick Start
@@ -17,7 +17,7 @@ uv add tarko-web-ui
 ### Option 1: Use the Package Directly
 
 ```python
-from tarko_web_ui import get_static_path
+from tarko_agent_ui import get_static_path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
@@ -41,7 +41,7 @@ python3 examples/fastapi_server.py
 ## Core API
 
 ```python
-from tarko_web_ui import get_static_path
+from tarko_agent_ui import get_static_path
 
 # Get path to static files (for mounting in your web framework)
 static_path = get_static_path()
@@ -53,7 +53,7 @@ static_path = get_static_path()
 ```python
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from tarko_web_ui import get_static_path
+from tarko_agent_ui import get_static_path
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory=get_static_path()))
@@ -62,7 +62,7 @@ app.mount("/static", StaticFiles(directory=get_static_path()))
 ### Flask
 ```python
 from flask import Flask, send_from_directory
-from tarko_web_ui import get_static_path
+from tarko_agent_ui import get_static_path
 
 app = Flask(__name__)
 
