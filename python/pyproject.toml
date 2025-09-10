@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-sandbox"
+version = "0.1.0"
+description = "Python SDK for serving Tarko Agent UI Builder static assets"
+readme = "README.md"
+requires-python = ">=3.7"
+authors = [
+    {name = "Tarko Team", email = "team@tarko.ai"}
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "fastapi>=0.68.0",
+    "uvicorn[standard]>=0.15.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/agent-infra/tarko-agent-ui-fastapi-example"
+Repository = "https://github.com/agent-infra/tarko-agent-ui-fastapi-example"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agent_sandbox*"]
