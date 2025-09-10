@@ -73,12 +73,10 @@ html = get_agent_ui_html(base_url=base_url)
 
 ```python
 from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from tarko_agent_ui import get_static_path, get_agent_ui_html
+from tarko_agent_ui import get_agent_ui_html
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory=get_static_path()))
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -93,8 +91,8 @@ async def root():
 <summary><strong>Flask</strong> (click to expand)</summary>
 
 ```python
-from flask import Flask, send_from_directory
-from tarko_agent_ui import get_static_path, get_agent_ui_html
+from flask import Flask
+from tarko_agent_ui import get_agent_ui_html
 
 app = Flask(__name__)
 
@@ -104,10 +102,6 @@ def root():
         base_url="http://localhost:5000/api",
         ui_config={"title": "Flask Agent"}
     )
-
-@app.route('/static/<path:filename>')
-def static_files(filename):
-    return send_from_directory(get_static_path(), filename)
 ```
 </details>
 
@@ -145,19 +139,23 @@ python examples/fastapi_server.py
 
 ## API Reference
 
-### `get_agent_ui_html(base_url, ui_config=None)`
+### `get_agent_ui_html(base_url, ui_config=None)` ⭐
 
-Returns configured Agent UI HTML content.
+Returns configured Agent UI HTML content with injected environment variables.
 
 **Parameters:**
 - `base_url` (str): Agent API base URL
 - `ui_config` (dict, optional): UI configuration object
 
-**Returns:** HTML string ready for serving
+**Returns:** Complete HTML string ready for serving
 
-### `get_static_path()`
+**Note:** This is the recommended approach - no need to mount static files!
 
-Returns absolute path to bundled static assets for mounting in web frameworks.
+### `get_static_path()` (Advanced)
+
+Returns absolute path to bundled static assets.
+
+**Use case:** Only needed if you want to serve static files separately (e.g., for custom routing or CDN setup).
 
 ## How It Works
 
