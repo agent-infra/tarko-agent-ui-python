@@ -37,13 +37,9 @@ Repository = "https://github.com/agent-infra/tarko-agent-ui-python"
 
 [tool.hatch.build.targets.wheel]
 only-include = ["tarko_agent_ui"]
-exclude = ["tarko_agent_ui/static"]
-force-include = { "tarko_agent_ui/static" = "tarko_agent_ui/static" }
 
 [tool.hatch.build.targets.sdist]
 only-include = ["tarko_agent_ui"]
-exclude = ["tarko_agent_ui/static"]
-force-include = { "tarko_agent_ui/static" = "tarko_agent_ui/static" }
 
 
 
