@@ -2,10 +2,12 @@
 
 Python SDK for serving [`@tarko/agent-ui-builder`](https://www.npmjs.com/package/@tarko/agent-ui-builder) static assets.
 
-## Quick Start (30 seconds)
+## Quick Start
 
 ```bash
 pip install tarko-agent-ui
+# Or with uv
+uv add tarko-agent-ui
 ```
 
 ```python
@@ -163,6 +165,10 @@ Returns absolute path to bundled static assets for mounting in web frameworks.
 1. **Zero Dependencies**: Static assets are pre-bundled with the Python package
 2. **Framework Agnostic**: Returns HTML strings that work with any Python web framework
 3. **No Runtime Downloads**: Everything works offline after installation
+
+## Backend Integration
+
+To connect your Agent backend, implement the [Agent API Protocol](https://github.com/agent-infra/agent-protocol) (documentation coming soon).
 
 ## Requirements
 
