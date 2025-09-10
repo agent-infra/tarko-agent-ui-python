@@ -18,13 +18,10 @@ __all__ = ["get_static_path", "get_static_version"]
 
 
 def get_static_path() -> str:
-    """Get the path to the static assets directory.
-    
-    Returns:
-        str: Absolute path to the static assets directory.
+    """Returns absolute path to bundled static assets.
         
     Raises:
-        FileNotFoundError: If static assets are not found.
+        FileNotFoundError: When assets are missing or incomplete.
     """
     package_dir = Path(__file__).parent
     static_dir = package_dir / "static"
@@ -49,11 +46,7 @@ def get_static_path() -> str:
 
 
 def get_static_version() -> dict:
-    """Get information about the packaged static assets.
-    
-    Returns:
-        dict: Information about the static assets including version and package name.
-    """
+    """Returns version and package information for bundled assets."""
     return {
         "version": STATIC_ASSETS_VERSION,
         "package": STATIC_ASSETS_PACKAGE,

@@ -17,23 +17,30 @@ from urllib.request import urlopen
 from typing import Optional
 
 
+def get_project_paths() -> tuple[Path, Path]:
+    """Returns project root and package directory paths."""
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+    package_dir = project_root / "tarko_agent_ui"
+    return project_root, package_dir
+
+
 def download_npm_package(version: Optional[str] = None, target_dir: Path = None) -> str:
-    """Download and extract npm package to target directory.
+    """Downloads and extracts npm package to target directory.
     
     Args:
         version: Specific version to download. If None, downloads latest.
         target_dir: Target directory to extract to. If None, uses package static dir.
         
     Returns:
-        str: The version that was downloaded.
+        Downloaded version string.
     """
     package_name = "@tarko/agent-ui-builder"
     
     if target_dir is None:
         # Default to package static directory
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
-        target_dir = project_root / "tarko_agent_ui" / "static"
+        _, package_dir = get_project_paths()
+        target_dir = package_dir / "static"
     
     print(f"🔍 Fetching package info for {package_name}...")
     
@@ -88,16 +95,14 @@ def download_npm_package(version: Optional[str] = None, target_dir: Path = None)
 
 
 def create_version_file(version: str, target_dir: Path = None) -> None:
-    """Create a version file to track the packaged version.
+    """Creates version tracking file for packaged assets.
     
     Args:
         version: The version that was packaged.
         target_dir: Target directory. If None, uses package root.
     """
     if target_dir is None:
-        script_dir = Path(__file__).parent
-        project_root = script_dir.parent
-        target_dir = project_root / "tarko_agent_ui"
+        _, target_dir = get_project_paths()
     
     version_file = target_dir / "_static_version.py"
     
@@ -115,7 +120,7 @@ STATIC_ASSETS_PACKAGE = "@tarko/agent-ui-builder"
 
 
 def main():
-    """Main entry point."""
+    """Downloads and packages static assets with CLI interface."""
     import argparse
     
     parser = argparse.ArgumentParser(

@@ -25,12 +25,25 @@ except ImportError:
     exit(1)
 
 
-def create_app() -> FastAPI:
-    """Create and configure FastAPI application.
+def handle_missing_assets(e: FileNotFoundError, context: str = "api") -> None:
+    """Handles FileNotFoundError with context-appropriate responses."""
+    suggestion = "Run 'python scripts/build_assets.py' to build static assets"
     
-    Returns:
-        FastAPI: Configured FastAPI application instance.
-    """
+    if context == "api":
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": str(e),
+                "suggestion": suggestion
+            }
+        )
+    else:
+        print(f"❌ {e}")
+        print(f"💡 {suggestion}")
+
+
+def create_app() -> FastAPI:
+    """Creates FastAPI app with static asset routing and health endpoints."""
     app = FastAPI(
         title="Tarko Agent UI Server",
         description="FastAPI server for serving Tarko Agent UI Builder static assets",
@@ -39,7 +52,7 @@ def create_app() -> FastAPI:
     
     @app.get("/")
     async def root():
-        """Serve the main index.html file."""
+        """Serves the main UI application."""
         try:
             static_path = get_static_path()
             index_file = Path(static_path) / "index.html"
@@ -55,17 +68,11 @@ def create_app() -> FastAPI:
             
             return FileResponse(str(index_file))
         except FileNotFoundError as e:
-            raise HTTPException(
-                status_code=500, 
-                detail={
-                    "error": str(e),
-                    "suggestion": "Run 'python scripts/build_assets.py' to build static assets"
-                }
-            )
+            handle_missing_assets(e, "api")
     
     @app.get("/api/v1/health")
     async def health_check():
-        """Health check endpoint."""
+        """Returns server status for monitoring."""
         return {"status": "ok"}
     
     # Mount static files if available
@@ -76,14 +83,13 @@ def create_app() -> FastAPI:
         print(f"✅ Mounted static files from: {static_path}")
         print(f"📦 Assets version: {version_info['package']}@{version_info['version']}")
     except FileNotFoundError as e:
-        print(f"⚠️  {e}")
-        print("💡 Run 'python scripts/build_assets.py' to build static assets")
+        handle_missing_assets(e, "startup")
     
     return app
 
 
 def main():
-    """Main entry point for running the server."""
+    """Starts the development server with asset validation."""
     print("🚀 Starting Tarko Agent UI Server...")
     print("📱 Open http://localhost:8000 in your browser")
     print("🔍 Health check: http://localhost:8000/api/v1/health")
@@ -95,8 +101,7 @@ def main():
         version_info = get_static_version()
         print(f"✅ Static assets found: {version_info['package']}@{version_info['version']}")
     except FileNotFoundError as e:
-        print(f"❌ {e}")
-        print("💡 Run 'python scripts/build_assets.py' to build static assets")
+        handle_missing_assets(e, "startup")
         print("   Server will start but static routes will be unavailable.")
     
     # Create and run the app
