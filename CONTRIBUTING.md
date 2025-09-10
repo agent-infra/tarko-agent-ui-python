@@ -38,9 +38,9 @@ uv build
 uv publish
 ```
 
-## Project Structure
+## Automated Release
 
-- `tarko_agent_ui/` - Main package code
-- `scripts/build_assets.py` - Static asset builder
-- `examples/` - Usage examples
-- `tests/` - Test suite
+```bash
+# Auto-bump version and publish when @tarko/agent-ui-builder updates
+uv run python scripts/auto_release.py
+```
