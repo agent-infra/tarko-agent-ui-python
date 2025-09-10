@@ -77,22 +77,18 @@ def inject_env_variables(
     if ui_config is None:
         ui_config = {}
     
-    # Create the script tag with environment variables
     script_tag = f'''<script>
       window.AGENT_BASE_URL = {json.dumps(base_url)};
       window.AGENT_WEB_UI_CONFIG = {json.dumps(ui_config)};
       console.log("Agent: Using API baseURL:", window.AGENT_BASE_URL);
     </script>'''
     
-    # Find the head tag and inject the script
     head_pattern = r'(<head[^>]*>)'
     match = re.search(head_pattern, html_content, re.IGNORECASE)
     
     if not match:
         raise ValueError("HTML content must contain a valid <head> section")
     
-    # Insert script after the opening head tag
-    head_tag = match.group(1)
     injection_point = match.end()
     
     modified_html = (

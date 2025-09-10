@@ -51,7 +51,7 @@ html_content = "<html><head></head><body></body></html>"
 modified_html = inject_env_variables(
     html_content=html_content,
     base_url="http://localhost:8000/api",
-    ui_config={"theme": "dark"}
+    ui_config={"title": "My Agent", "logo": "logo.png"}
 )
 ```
 
@@ -77,7 +77,7 @@ async def root():
     return inject_env_variables(
         html_content=html_content,
         base_url="http://localhost:8000/api",
-        ui_config={"theme": "dark", "features": {"chat": True}}
+        ui_config={"title": "My Agent", "logo": "logo.png"}
     )
 ```
 

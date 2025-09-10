@@ -115,19 +115,35 @@ def main():
         handle_missing_assets(e, "startup")
         print("Warning: Static routes will be unavailable")
     
-    # Example configuration - customize as needed
-    example_ui_config = {
-        "theme": "dark",
-        "features": {
-            "chat": True,
-            "workspace": True
+    # Real-world UI configuration example
+    ui_config = {
+        "logo": "https://lf3-static.bytednsdoc.com/obj/eden-cn/vryha/ljhwZthlaukjlkulzlp/search-logo.png",
+        "title": "Search Agent",
+        "subtitle": "Search connects you to the web, simply and seamlessly",
+        "welcomTitle": "Effortless web search, simplified",
+        "welcomePrompts": [
+            "Search for the latest GUI Agent papers",
+            "Find information about UI TARS",
+            "What is Agent TARS",
+            "What released in UI-TARS-2?"
+        ],
+        "workspace": {
+            "navItems": [
+                {
+                    "title": "Github",
+                    "link": "https://github.com/agent-infra/agent-starter",
+                    "icon": "code"
+                }
+            ]
+        },
+        "layout": {
+            "defaultLayout": "narrow-chat"
         }
     }
     
-    # Create and run the app with environment injection
     app = create_app(
         base_url="http://localhost:8000/api",
-        ui_config=example_ui_config
+        ui_config=ui_config
     )
     
     uvicorn.run(
