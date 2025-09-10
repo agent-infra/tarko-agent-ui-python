@@ -33,7 +33,10 @@ uv build
 ## Publishing
 
 ```bash
-# Build and publish to PyPI
+# Check if ready for release
+uv run python scripts/check_release_ready.py
+
+# If all checks pass, publish to PyPI
 uv build
 uv publish
 ```
