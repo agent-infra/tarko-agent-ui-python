@@ -1,6 +1,6 @@
 # Tarko Agent UI Python SDK
 
-One-line setup for Agent UI in any Python web framework.
+Python SDK for serving [`@tarko/agent-ui-builder`](https://www.npmjs.com/package/@tarko/agent-ui-builder) static assets.
 
 ## Quick Start (30 seconds)
 
