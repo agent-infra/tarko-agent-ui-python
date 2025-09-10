@@ -111,7 +111,9 @@ def run_command(cmd: str) -> bool:
 def verify_npm_version_exists(npm_version: str) -> bool:
     """Verify that the specified npm version exists."""
     try:
-        response = requests.get("https://registry.npmjs.org/%40tarko%2Fagent-ui-builder")
+        response = requests.get(
+            "https://registry.npmjs.org/%40tarko%2Fagent-ui-builder"
+        )
         response.raise_for_status()
         package_info = response.json()
         return npm_version in package_info["versions"]
@@ -146,7 +148,7 @@ def update_all_version_files(new_version: str) -> bool:
             new_content = re.sub(
                 r'assert version_info\["sdk_version"\] == "[^"]+"',
                 f'assert version_info["sdk_version"] == "{new_version}"',
-                content
+                content,
             )
             test_path.write_text(new_content)
 
@@ -164,25 +166,25 @@ def main():
         description="Automated release for tarko-agent-ui package"
     )
     parser.add_argument(
-        "--version", 
-        type=str, 
-        help="Specific npm version to release (e.g., 0.3.0-beta.9). If not specified, uses latest."
+        "--version",
+        type=str,
+        help="Specific npm version to release (e.g., 0.3.0-beta.9). If not specified, uses latest.",
     )
     parser.add_argument(
-        "--dry-run", 
-        action="store_true", 
-        help="Show what would be done without actually doing it"
+        "--dry-run",
+        action="store_true",
+        help="Show what would be done without actually doing it",
     )
-    
+
     args = parser.parse_args()
-    
+
     print("🚀 Starting automated release process...")
 
     # Get target npm version
     if args.version:
         npm_version = args.version
         print(f"📦 Using specified version: {npm_version}")
-        
+
         # Verify specified version exists
         if not verify_npm_version_exists(npm_version):
             print(f"❌ Version {npm_version} does not exist on npm")
@@ -253,7 +255,9 @@ def main():
             sys.exit(1)
 
     print(f"\n🎉 Successfully released {target_python_version}!")
-    print(f"📦 Package: https://pypi.org/project/tarko-agent-ui/{target_python_version}/")
+    print(
+        f"📦 Package: https://pypi.org/project/tarko-agent-ui/{target_python_version}/"
+    )
 
 
 if __name__ == "__main__":
