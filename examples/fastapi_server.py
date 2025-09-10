@@ -7,6 +7,7 @@ This example demonstrates how to integrate the tarko_agent_ui SDK
 with a FastAPI application to serve the Tarko Agent UI.
 """
 
+import os
 from pathlib import Path
 from typing import Dict, Any, Optional
 
@@ -102,34 +103,54 @@ def main():
         handle_missing_assets(e, "startup")
         print("Warning: Static routes will be unavailable")
     
-    # Real-world UI configuration example
+    # Get base URL from environment variable or use default
+    base_url = os.getenv("AGENT_BASE_URL", "http://localhost:8000/api")
+    
+    print(f"Agent Base URL: {base_url}")
+    
+    # Omni Agent UI configuration
     ui_config = {
-        "logo": "https://lf3-static.bytednsdoc.com/obj/eden-cn/vryha/ljhwZthlaukjlkulzlp/search-logo.png",
-        "title": "Search Agent",
-        "subtitle": "Search connects you to the web, simply and seamlessly",
-        "welcomTitle": "Effortless web search, simplified",
+        "logo": "https://lf3-static.bytednsdoc.com/obj/eden-cn/zyha-aulnh/ljhwZthlaukjlkulzlp/icon.png",
+        "title": "Omni Agent",
+        "subtitle": "Offering seamless integration with a wide range of real-world tools.",
+        "welcomTitle": "A multimodal AI agent",
         "welcomePrompts": [
             "Search for the latest GUI Agent papers",
             "Find information about UI TARS",
-            "What is Agent TARS",
-            "What released in UI-TARS-2?"
+            "Tell me the top 5 most popular projects on ProductHunt today",
+            "Write hello world using python",
+            "Use jupyter to calculate which is greater in 9.11 and 9.9",
+            "Write code to reproduce seed-tars.com",
+            "Summary seed-tars.com/1.5",
+            "Write a python code to download the paper https://arxiv.org/abs/2505.12370, and convert the pdf to markdown",
+            "Search news about bytedance seed1.6 model, then write a web page in modern style and deploy it",
+            "Write a minimal code sample to help me use transformer",
+            "Please search for trending datasets on Hugging Face, download the top-ranked dataset, and calculate the total number of characters in the entire datase.",
+            "Identify the independence process of a twin-island nation where the pro-self-governance political group won thirteen out of seventeen legislative seats in spring 1980 national polls, a second constitutional conference was held at a historic London venue in late 1980, liberation from colonial rule is annually commemorated on November 1st as a public holiday, and an agreement revised the smaller island's local governance legislation for enhanced autonomy. What was the composition of the associated state that preceded its independence?",
+            "I am a high school music theory teacher and i'm preparing a course on basic music theory to explain knowledge about music names, roll titles, major scales, octave distribution, and physical frequency. Please help me collect enough informations, design fulfilling and authoritative course content with demonstration animations, and finally output them as web page"
         ],
         "workspace": {
             "navItems": [
                 {
                     "title": "Github",
-                    "link": "https://github.com/agent-infra/agent-starter",
+                    "link": "https://github.com/agent-infra/tarko-agent-ui-python",
                     "icon": "code"
                 }
             ]
         },
+        "guiAgent": {
+            "defaultScreenshotRenderStrategy": "afterAction",
+            "enableScreenshotRenderStrategySwitch": True,
+            "renderGUIAction": True,
+            "renderBrowserShell": False
+        },
         "layout": {
-            "defaultLayout": "narrow-chat"
+            "enableLayoutSwitchButton": True
         }
     }
     
     app = create_app(
-        base_url="http://localhost:8000/api",
+        base_url=base_url,
         ui_config=ui_config
     )
     
