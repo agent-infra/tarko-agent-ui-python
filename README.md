@@ -1,20 +1,40 @@
-# Tarko Web UI SDK
+# Tarko Agent UI Python SDK
 
 Python SDK for serving [`@tarko/agent-ui-builder`](https://www.npmjs.com/package/@tarko/agent-ui-builder) static assets.
 
-## Quick Start
+## Installation
 
 ```bash
-# 1. Clone and setup
-git clone https://github.com/agent-infra/tarko-agent-ui-fastapi-example.git
-cd tarko-agent-ui-fastapi-example
+# Install from PyPI
+pip install tarko-web-ui
+
+# Or with uv
+uv add tarko-web-ui
+```
+
+## Quick Start
+
+### Option 1: Use the Package Directly
+
+```python
+from tarko_web_ui import get_static_path
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+app = FastAPI()
+app.mount("/static", StaticFiles(directory=get_static_path()))
+```
+
+### Option 2: Try the Example
+
+```bash
+# 1. Clone the example repository
+git clone https://github.com/agent-infra/tarko-agent-ui-python.git
+cd tarko-agent-ui-python
 uv sync
 
-# 2. Build static assets
-python scripts/build_assets.py
-
-# 3. Run the demo
-python examples/fastapi_server.py
+# 2. Run the demo server
+python3 examples/fastapi_server.py
 # Open http://localhost:8000
 ```
 
@@ -53,14 +73,13 @@ def static_files(filename):
 
 ## How It Works
 
-1. **Build Time**: `scripts/build_assets.py` downloads npm package and extracts static files
+1. **Package Installation**: Static assets are bundled with the Python package
 2. **Runtime**: `get_static_path()` returns local path to pre-built assets
 3. **Zero Overhead**: No runtime downloads, no npm dependencies
 
 ## Examples
 
-- [`examples/simple_usage.py`](examples/simple_usage.py) - Basic usage
-- [`examples/fastapi_server.py`](examples/fastapi_server.py) - Complete FastAPI server
+- [`examples/fastapi_server.py`](examples/fastapi_server.py) - Complete FastAPI server with health check
 
 ## Requirements
 

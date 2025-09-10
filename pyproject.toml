@@ -28,8 +28,9 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/agent-infra/tarko-agent-ui-fastapi-example"
-Repository = "https://github.com/agent-infra/tarko-agent-ui-fastapi-example"
+Homepage = "https://github.com/agent-infra/tarko-agent-ui-python"
+Repository = "https://github.com/agent-infra/tarko-agent-ui-python"
+"Bug Tracker" = "https://github.com/agent-infra/tarko-agent-ui-python/issues"
 
 
 
