@@ -1,7 +1,7 @@
 include README.md
 include pyproject.toml
-include setup.py
+include scripts/build_assets.py
 recursive-include tarko_web_ui *.py
-recursive-exclude tarko_web_ui/static *
+recursive-include tarko_web_ui/static *
 global-exclude __pycache__
 global-exclude *.py[co]

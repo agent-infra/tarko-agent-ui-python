@@ -32,6 +32,21 @@ Repository = "https://github.com/agent-infra/tarko-agent-ui-fastapi-example"
 
 
 
+[tool.hatch.build.targets.wheel]
+include = [
+    "tarko_web_ui/**/*.py",
+    "tarko_web_ui/static/**/*",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "tarko_web_ui/**/*.py",
+    "tarko_web_ui/static/**/*",
+    "scripts/build_assets.py",
+    "README.md",
+    "pyproject.toml",
+]
+
 [tool.uv]
 dev-dependencies = [
     "pytest>=7.0.0",

@@ -16,7 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
 try:
-    from tarko_web_ui import get_static_path, download_static_assets
+    from tarko_web_ui import get_static_path, get_static_version
 except ImportError:
     print("❌ Error: tarko_web_ui package not found.")
     print("💡 Install it with: uv add tarko-web-ui")
@@ -50,7 +50,7 @@ def create_app() -> FastAPI:
                     status_code=404, 
                     detail={
                         "error": "index.html not found in static assets",
-                        "suggestion": "Run: python -c 'from tarko_web_ui import download_static_assets; download_static_assets()'"
+                        "suggestion": "Run 'python scripts/build_assets.py' to build static assets"
                     }
                 )
             
@@ -60,7 +60,7 @@ def create_app() -> FastAPI:
                 status_code=500, 
                 detail={
                     "error": str(e),
-                    "suggestion": "Run: python -c 'from tarko_web_ui import download_static_assets; download_static_assets()'"
+                    "suggestion": "Run 'python scripts/build_assets.py' to build static assets"
                 }
             )
     
@@ -71,9 +71,11 @@ def create_app() -> FastAPI:
             static_path = get_static_path()
             static_path_obj = Path(static_path)
             index_exists = (static_path_obj / "index.html").exists()
+            version_info = get_static_version()
             
             # Count static files
-            file_count = len(list(static_path_obj.rglob("*"))) if static_path_obj.exists() else 0
+            all_files = list(static_path_obj.rglob("*")) if static_path_obj.exists() else []
+            file_count = len([f for f in all_files if f.is_file()])
             
             return {
                 "status": "healthy" if index_exists else "degraded",
@@ -81,30 +83,28 @@ def create_app() -> FastAPI:
                 "static_exists": static_path_obj.exists(),
                 "index_exists": index_exists,
                 "file_count": file_count,
-                "version": "0.1.0"
+                "assets_version": version_info["version"],
+                "assets_package": version_info["package"],
+                "sdk_version": version_info["sdk_version"]
             }
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "error": str(e),
-                "suggestion": "Run: python -c 'from tarko_web_ui import download_static_assets; download_static_assets()'"
+                "suggestion": "Run 'python scripts/build_assets.py' to build static assets"
             }
     
-    @app.post("/api/download-assets")
-    async def download_assets(version: Optional[str] = None):
-        """Download static assets endpoint."""
+    @app.get("/api/version")
+    async def version_info():
+        """Get version information about static assets."""
         try:
-            download_static_assets(version=version)
-            return {
-                "status": "success",
-                "message": f"Downloaded assets{f' version {version}' if version else ''}"
-            }
+            return get_static_version()
         except Exception as e:
             raise HTTPException(
                 status_code=500,
                 detail={
-                    "error": f"Failed to download assets: {e}",
-                    "suggestion": "Check internet connection and npm registry availability"
+                    "error": f"Failed to get version info: {e}",
+                    "suggestion": "Run 'python scripts/build_assets.py' to build static assets"
                 }
             )
     
@@ -112,11 +112,12 @@ def create_app() -> FastAPI:
     try:
         static_path = get_static_path()
         app.mount("/static", StaticFiles(directory=static_path), name="static")
+        version_info = get_static_version()
         print(f"✅ Mounted static files from: {static_path}")
-    except FileNotFoundError:
-        print("⚠️  Static assets not found.")
-        print("💡 Download them with: python -c 'from tarko_web_ui import download_static_assets; download_static_assets()'")
-        print("   Or use the API endpoint: POST /api/download-assets")
+        print(f"📦 Assets version: {version_info['package']}@{version_info['version']}")
+    except FileNotFoundError as e:
+        print(f"⚠️  {e}")
+        print("💡 Run 'python scripts/build_assets.py' to build static assets")
     
     return app
 
@@ -127,20 +128,18 @@ def main():
     print("📱 Open http://localhost:8000 in your browser")
     print("🔍 Health check: http://localhost:8000/api/health")
     print("📚 API docs: http://localhost:8000/api/docs")
+    print("🏷️  Version info: http://localhost:8000/api/version")
     print("")
     
-    # Check if static assets exist, if not, try to download them
+    # Check if static assets exist
     try:
         get_static_path()
-        print("✅ Static assets found")
-    except FileNotFoundError:
-        print("⚠️  Static assets not found, attempting to download...")
-        try:
-            download_static_assets()
-            print("✅ Static assets downloaded successfully")
-        except Exception as e:
-            print(f"❌ Failed to download static assets: {e}")
-            print("💡 You can download them later using: POST /api/download-assets")
+        version_info = get_static_version()
+        print(f"✅ Static assets found: {version_info['package']}@{version_info['version']}")
+    except FileNotFoundError as e:
+        print(f"❌ {e}")
+        print("💡 Run 'python scripts/build_assets.py' to build static assets")
+        print("   Server will start but static routes will be unavailable.")
     
     # Create and run the app
     app = create_app()
