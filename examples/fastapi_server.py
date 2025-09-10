@@ -105,10 +105,8 @@ def main():
     
     # Get base URL from environment variable or use default
     base_url = os.getenv("AGENT_BASE_URL", "http://localhost:8000/api")
-    sandbox_base_url = os.getenv("SANDBOX_BASE_URL", "http://localhost:8080")
     
     print(f"Agent Base URL: {base_url}")
-    print(f"Sandbox Base URL: {sandbox_base_url}")
     
     # Omni Agent UI configuration
     ui_config = {
@@ -134,14 +132,9 @@ def main():
         "workspace": {
             "navItems": [
                 {
-                    "title": "Code Server",
-                    "link": f"{sandbox_base_url}/code-server/",
+                    "title": "Github",
+                    "link": "https://github.com/agent-infra/agent-starter",
                     "icon": "code"
-                },
-                {
-                    "title": "VNC",
-                    "link": f"{sandbox_base_url}/vnc/index.html?autoconnect=true",
-                    "icon": "monitor"
                 }
             ]
         },
