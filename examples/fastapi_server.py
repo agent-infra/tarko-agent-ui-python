@@ -41,7 +41,7 @@ def handle_missing_assets(e: FileNotFoundError, context: str = "api") -> None:
 def create_app(
     base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
 ) -> FastAPI:
-    """Creates FastAPI app with static asset routing and health endpoints.
+    """Creates FastAPI app with static asset routing.
 
     Args:
         base_url: Agent API base URL for environment injection
@@ -67,11 +67,6 @@ def create_app(
             raise HTTPException(
                 status_code=500, detail={"error": f"HTML injection failed: {str(e)}"}
             )
-
-    @app.get("/api/v1/health")
-    async def health_check() -> Dict[str, str]:
-        """Returns server status for monitoring."""
-        return {"status": "ok"}
 
     # Mount static files if available
     try:

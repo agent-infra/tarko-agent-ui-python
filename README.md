@@ -133,7 +133,6 @@ def home(request):
 See [`examples/fastapi_server.py`](examples/fastapi_server.py) for a production-ready FastAPI server with:
 - Comprehensive UI configuration
 - Error handling
-- Health checks
 - Environment variable support
 
 ```bash
