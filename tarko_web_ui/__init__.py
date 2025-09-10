@@ -20,20 +20,27 @@ __all__ = ["get_static_path", "download_static_assets"]
 def get_static_path() -> str:
     """Get the path to the static assets directory.
     
+    Automatically downloads assets if they don't exist.
+    
     Returns:
         str: Absolute path to the static assets directory.
         
     Raises:
-        FileNotFoundError: If static assets are not found.
+        FileNotFoundError: If static assets cannot be downloaded.
     """
     package_dir = Path(__file__).parent
     static_dir = package_dir / "static"
     
-    if not static_dir.exists():
-        raise FileNotFoundError(
-            f"Static assets not found at {static_dir}. "
-            "Please run: python -c 'from tarko_web_ui import download_static_assets; download_static_assets()'"
-        )
+    if not static_dir.exists() or not (static_dir / "index.html").exists():
+        print("📦 Static assets not found, downloading automatically...")
+        try:
+            download_static_assets()
+            print("✅ Static assets downloaded successfully!")
+        except Exception as e:
+            raise FileNotFoundError(
+                f"Failed to download static assets: {e}. "
+                "You can try manually: python -c 'from tarko_web_ui import download_static_assets; download_static_assets()'"
+            )
     
     return str(static_dir.absolute())
 
@@ -94,10 +101,10 @@ def download_static_assets(version: Optional[str] = None) -> None:
                 extracted_count = 0
                 for member in tar.getmembers():
                     if member.name.startswith("package/static/"):
-                        # Remove 'package/' prefix and extract to static_dir
-                        relative_path = member.name[8:]  # len("package/") = 8
-                        if relative_path and relative_path != "static/":
-                            # Adjust the member name for extraction
+                        # Remove 'package/static/' prefix and extract to static_dir
+                        relative_path = member.name[15:]  # len("package/static/") = 15
+                        if relative_path:  # Skip empty paths
+                            # Create a new member with adjusted path
                             member.name = relative_path
                             tar.extract(member, static_dir)
                             extracted_count += 1

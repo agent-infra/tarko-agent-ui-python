@@ -6,31 +6,33 @@ Minimal Python SDK for managing static assets from [`@tarko/agent-ui-builder`](h
 
 This package does **one thing well**: manages static assets from the npm package. It provides a clean API for other packages to consume these assets without imposing any server implementation.
 
+**Auto-download**: Static assets are automatically downloaded on first use, eliminating manual setup steps.
+
 ## Quick Start
 
 ```bash
-# Install the SDK
+# Install the SDK (static assets download automatically)
 uv add tarko-web-ui
 # or: pip install tarko-web-ui
 
-# Use in your code
-python -c "from tarko_web_ui import download_static_assets; download_static_assets()"
+# Ready to use!
+python -c "from tarko_web_ui import get_static_path; print(get_static_path())"
 ```
 
 ## Core API
 
 ### `get_static_path() -> str`
 
-Returns the absolute path to downloaded static assets.
+Returns the absolute path to static assets. **Automatically downloads assets if they don't exist.**
 
 ```python
 from tarko_web_ui import get_static_path
 
-static_path = get_static_path()
+static_path = get_static_path()  # Downloads assets on first call
 print(f"Assets at: {static_path}")
 ```
 
-**Raises:** `FileNotFoundError` if assets haven't been downloaded
+**Raises:** `FileNotFoundError` if assets cannot be downloaded
 
 ### `download_static_assets(version: Optional[str] = None) -> None`
 
@@ -126,11 +128,8 @@ uv run --with fastapi --with uvicorn python examples/fastapi_server.py
 git clone https://github.com/agent-infra/tarko-agent-ui-fastapi-example.git
 cd tarko-agent-ui-fastapi-example
 
-# Install with development dependencies
+# Install with development dependencies (assets download automatically)
 uv sync
-
-# Download static assets
-python -c "from tarko_web_ui import download_static_assets; download_static_assets()"
 
 # Run examples
 python examples/simple_usage.py
