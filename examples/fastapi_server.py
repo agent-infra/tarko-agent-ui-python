@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
 """Complete FastAPI example using tarko_web_ui SDK.
 
@@ -148,7 +149,7 @@ def main():
         app,
         host="0.0.0.0",
         port=8000,
-        reload=True,
+        reload=False,
         log_level="info"
     )
 
