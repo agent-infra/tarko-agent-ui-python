@@ -13,6 +13,7 @@ from tarko_agent_ui import (
     get_static_version,
     get_agent_ui_html,
     inject_env_variables,
+    __version__,
 )
 
 
@@ -50,7 +51,7 @@ class TestGetStaticVersion:
         assert "package" in version_info
         assert "sdk_version" in version_info
         assert version_info["package"] == "@tarko/agent-ui-builder"
-        assert version_info["sdk_version"] == "0.3.0b12.post1"
+        assert version_info["sdk_version"] == __version__
 
 
 class TestInjectEnvVariables:
