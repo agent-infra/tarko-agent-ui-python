@@ -70,6 +70,26 @@ def normalize_npm_version_to_python(npm_version: str) -> str:
     return npm_version
 
 
+def increment_version_for_republish(version: str) -> str:
+    """Increment version for republishing to avoid PyPI conflicts.
+    
+    Examples:
+        0.3.0b12 -> 0.3.0b12.post1
+        0.3.0b12.post1 -> 0.3.0b12.post2
+        1.0.0 -> 1.0.0.post1
+    """
+    # Check if already has .postN suffix
+    post_match = re.search(r'\.post(\d+)$', version)
+    if post_match:
+        # Increment existing post number
+        current_post = int(post_match.group(1))
+        new_post = current_post + 1
+        return re.sub(r'\.post\d+$', f'.post{new_post}', version)
+    else:
+        # Add .post1 suffix
+        return f"{version}.post1"
+
+
 def should_update_version(current_python_version: str, npm_version: str) -> bool:
     """Check if Python package should be updated based on npm version."""
     target_python_version = normalize_npm_version_to_python(npm_version)
@@ -175,6 +195,11 @@ def main():
         action="store_true",
         help="Show what would be done without actually doing it",
     )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force republish even if version is already up to date",
+    )
 
     args = parser.parse_args()
 
@@ -205,10 +230,17 @@ def main():
     target_python_version = normalize_npm_version_to_python(npm_version)
     print(f"🔄 Target Python version: {target_python_version}")
 
-    # Check if update needed (skip for manual version)
-    if not args.version and not should_update_version(current_version, npm_version):
+    # Check if update needed (skip for manual version or force flag)
+    if not args.version and not args.force and not should_update_version(current_version, npm_version):
         print("✅ Already up to date!")
+        print("💡 Use --force to republish anyway")
         return
+    
+    if args.force and current_version == target_python_version:
+        print("🔄 Force republishing current version...")
+        # Increment version to avoid PyPI conflicts
+        target_python_version = increment_version_for_republish(target_python_version)
+        print(f"📦 Using incremented version: {target_python_version}")
 
     if args.dry_run:
         print("\n🔍 DRY RUN - Commands that would be executed:")
@@ -241,6 +273,7 @@ def main():
     steps = [
         f"uv run python scripts/build_assets.py --version='{npm_version}'",  # Build assets with specific version
         "uv run pytest",  # Run tests
+        "rm -rf dist/*",  # Clean dist directory to avoid conflicts
         "uv build",  # Build package
         "uv publish",  # Publish to PyPI
         f"git add . && git commit -m 'feat: update to @tarko/agent-ui-builder@{npm_version}'",
