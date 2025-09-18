@@ -1,296 +1,284 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""Automated release script for tarko-agent-ui package.
+"""Optimized Python package release script with branch management."""
 
-Checks for new @tarko/agent-ui-builder versions and automatically:
-1. Downloads latest assets
-2. Bumps package version
-3. Builds and publishes to PyPI
-"""
-
-import json
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Optional, Union
+from typing import Optional
 
 import requests
 
 
-def get_npm_latest_version(package: str) -> Optional[str]:
-    """Get latest version of npm package."""
-    try:
-        response = requests.get(f"https://registry.npmjs.org/{package}/latest")
-        response.raise_for_status()
-        data = response.json()
-        return str(data["version"])
-    except Exception as e:
-        print(f"❌ Failed to get npm version: {e}")
-        return None
-
-
-def get_current_python_version() -> Optional[str]:
-    """Get current Python package version from pyproject.toml."""
-    try:
-        pyproject_path = Path("pyproject.toml")
-        content = pyproject_path.read_text()
-        match = re.search(r'version = "([^"]+)"', content)
-        return match.group(1) if match else None
-    except Exception as e:
-        print(f"❌ Failed to get current version: {e}")
-        return None
-
-
-def normalize_npm_version_to_python(npm_version: str) -> str:
-    """Convert npm version format to Python version format.
-
-    Examples:
-        0.3.0-beta.11 -> 0.3.0b11
-        0.3.0-alpha.5 -> 0.3.0a5
-        1.0.0 -> 1.0.0
-    """
-    # Handle beta versions: 0.3.0-beta.11 -> 0.3.0b11
-    if "-beta." in npm_version:
-        base, beta_num = npm_version.split("-beta.")
-        return f"{base}b{beta_num}"
-
-    # Handle alpha versions: 0.3.0-alpha.5 -> 0.3.0a5
-    if "-alpha." in npm_version:
-        base, alpha_num = npm_version.split("-alpha.")
-        return f"{base}a{alpha_num}"
-
-    # Handle rc versions: 0.3.0-rc.1 -> 0.3.0rc1
-    if "-rc." in npm_version:
-        base, rc_num = npm_version.split("-rc.")
-        return f"{base}rc{rc_num}"
-
-    # Regular version: 1.0.0 -> 1.0.0
-    return npm_version
-
-
-def increment_version_for_republish(version: str) -> str:
-    """Increment version for republishing to avoid PyPI conflicts.
-    
-    Examples:
-        0.3.0b12 -> 0.3.0b12.post1
-        0.3.0b12.post1 -> 0.3.0b12.post2
-        1.0.0 -> 1.0.0.post1
-    """
-    # Check if already has .postN suffix
-    post_match = re.search(r'\.post(\d+)$', version)
-    if post_match:
-        # Increment existing post number
-        current_post = int(post_match.group(1))
-        new_post = current_post + 1
-        return re.sub(r'\.post\d+$', f'.post{new_post}', version)
-    else:
-        # Add .post1 suffix
-        return f"{version}.post1"
-
-
-def should_update_version(current_python_version: str, npm_version: str) -> bool:
-    """Check if Python package should be updated based on npm version."""
-    target_python_version = normalize_npm_version_to_python(npm_version)
-    return current_python_version != target_python_version
-
-
-def update_version_in_pyproject(new_version: str) -> bool:
-    """Update version in pyproject.toml."""
-    try:
-        pyproject_path = Path("pyproject.toml")
-        content = pyproject_path.read_text()
-
-        # Replace version
-        new_content = re.sub(
-            r'version = "[^"]+"', f'version = "{new_version}"', content
-        )
-
-        pyproject_path.write_text(new_content)
-        return True
-    except Exception as e:
-        print(f"❌ Failed to update version: {e}")
-        return False
-
-
-def run_command(cmd: str) -> bool:
-    """Run shell command and return success status."""
-    try:
-        result = subprocess.run(
-            cmd, shell=True, check=True, capture_output=True, text=True
-        )
-        print(f"✅ {cmd}")
-        return True
-    except subprocess.CalledProcessError as e:
+def run_cmd(cmd, check=True):
+    """Run command and optionally check return code."""
+    print(f"🔧 {cmd}")
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    if check and result.returncode != 0:
         print(f"❌ Command failed: {cmd}")
-        print(f"   Error: {e.stderr}")
-        return False
+        print(f"stdout: {result.stdout}")
+        print(f"stderr: {result.stderr}")
+        sys.exit(1)
+    return result
 
 
-def verify_npm_version_exists(npm_version: str) -> bool:
-    """Verify that the specified npm version exists."""
-    try:
-        response = requests.get(
-            "https://registry.npmjs.org/%40tarko%2Fagent-ui-builder"
-        )
-        response.raise_for_status()
-        package_info = response.json()
-        return npm_version in package_info["versions"]
-    except Exception as e:
-        print(f"❌ Failed to verify npm version: {e}")
-        return False
+def get_current_branch():
+    """Get current git branch name."""
+    result = run_cmd("git rev-parse --abbrev-ref HEAD")
+    return result.stdout.strip()
 
 
-def update_all_version_files(new_version: str) -> bool:
-    """Update version in all relevant files."""
-    try:
-        # Update pyproject.toml
-        pyproject_path = Path("pyproject.toml")
-        content = pyproject_path.read_text()
-        new_content = re.sub(
-            r'version = "[^"]+"', f'version = "{new_version}"', content
-        )
-        pyproject_path.write_text(new_content)
+def get_npm_latest_version():
+    """Get latest npm version from registry."""
+    print("🔍 Fetching latest npm version...")
+    response = requests.get("https://registry.npmjs.org/@tarko/agent-ui-builder/latest")
+    response.raise_for_status()
+    version = response.json()["version"]
+    print(f"📦 Latest npm version: {version}")
+    return version
 
-        # Update __init__.py
-        init_path = Path("tarko_agent_ui/__init__.py")
-        content = init_path.read_text()
-        new_content = re.sub(
-            r'__version__ = "[^"]+"', f'__version__ = "{new_version}"', content
-        )
-        init_path.write_text(new_content)
 
-        # Update test file
-        test_path = Path("tests/test_core.py")
-        if test_path.exists():
-            content = test_path.read_text()
-            new_content = re.sub(
-                r'assert version_info\["sdk_version"\] == "[^"]+"',
-                f'assert version_info["sdk_version"] == "{new_version}"',
-                content,
-            )
-            test_path.write_text(new_content)
+def get_current_python_version():
+    """Get current Python version from pyproject.toml."""
+    content = Path("pyproject.toml").read_text()
+    match = re.search(r'version = "([^"]+)"', content)
+    if not match:
+        raise ValueError("Could not find version in pyproject.toml")
+    return match.group(1)
 
-        return True
-    except Exception as e:
-        print(f"❌ Failed to update version files: {e}")
-        return False
+
+def bump_patch_version(version):
+    """Bump patch version: 0.3.0 -> 0.3.1"""
+    match = re.match(r'^(\d+)\.(\d+)\.(\d+)', version)
+    if not match:
+        raise ValueError(f"Invalid version format: {version}")
+    major, minor, patch = match.groups()
+    return f"{major}.{minor}.{int(patch) + 1}"
+
+
+def update_version_files(python_version, npm_version):
+    """Update version in pyproject.toml and __init__.py."""
+    print(f"📝 Updating version files: Python {python_version}, npm {npm_version}")
+    
+    # Update pyproject.toml
+    pyproject = Path("pyproject.toml")
+    content = pyproject.read_text()
+    content = re.sub(r'version = "[^"]+"', f'version = "{python_version}"', content)
+    pyproject.write_text(content)
+    
+    # Update __init__.py
+    init_file = Path("tarko_agent_ui/__init__.py")
+    content = init_file.read_text()
+    content = re.sub(r'__version__ = "[^"]+"', f'__version__ = "{python_version}"', content)
+    content = re.sub(r'__npm_version__ = "[^"]+"', f'__npm_version__ = "{npm_version}"', content)
+    init_file.write_text(content)
+    
+    print("✅ Version files updated")
+
+
+def clean_old_artifacts():
+    """Clean old build artifacts to ensure fresh build."""
+    print("🧹 Cleaning old artifacts...")
+    
+    # Remove dist directory
+    run_cmd("rm -rf dist", check=False)
+    
+    # Remove build artifacts
+    run_cmd("rm -rf build", check=False)
+    run_cmd("rm -rf *.egg-info", check=False)
+    
+    # Remove static assets to force rebuild
+    run_cmd("rm -rf tarko_agent_ui/static", check=False)
+    run_cmd("rm -f tarko_agent_ui/_static_version.py", check=False)
+    
+    print("✅ Old artifacts cleaned")
+
+
+def build_static_assets(npm_version):
+    """Build static assets from npm package."""
+    print(f"🏗️  Building static assets with npm version {npm_version}...")
+    run_cmd(f"uv run python scripts/build_assets.py --version='{npm_version}'")
+    
+    # Verify static assets were built
+    static_dir = Path("tarko_agent_ui/static")
+    index_file = static_dir / "index.html"
+    
+    if not static_dir.exists() or not index_file.exists():
+        raise RuntimeError("Static assets build failed - missing files")
+    
+    print("✅ Static assets built successfully")
+
+
+def run_tests():
+    """Run test suite to ensure everything works."""
+    print("🧪 Running tests...")
+    run_cmd("uv run pytest")
+    print("✅ All tests passed")
+
+
+def build_and_verify_package():
+    """Build Python package and verify it can be published."""
+    print("📦 Building Python package...")
+    
+    # Create dist directory
+    run_cmd("mkdir -p dist")
+    
+    # Build package
+    run_cmd("uv build")
+    
+    # Verify dist files exist
+    dist_files = list(Path("dist").glob("*"))
+    if not dist_files:
+        raise RuntimeError("Package build failed - no files in dist/")
+    
+    print(f"✅ Package built successfully: {[f.name for f in dist_files]}")
+
+
+def create_release_branch(version):
+    """Create and switch to release branch."""
+    branch_name = f"release/{version}"
+    print(f"🌿 Creating release branch: {branch_name}")
+    
+    # Ensure we're on main and up to date
+    run_cmd("git checkout main")
+    run_cmd("git pull origin main")
+    
+    # Create and switch to release branch
+    run_cmd(f"git checkout -b {branch_name}")
+    
+    print(f"✅ Created and switched to branch: {branch_name}")
+    return branch_name
+
+
+def commit_and_tag(version):
+    """Commit changes and create git tag."""
+    print(f"📝 Committing release v{version}...")
+    
+    # Add all changes
+    run_cmd("git add .")
+    
+    # Commit with conventional commit format
+    run_cmd(f'git commit -m "release: v{version}"')
+    
+    # Create tag
+    run_cmd(f"git tag v{version}")
+    
+    print(f"✅ Committed and tagged v{version}")
+
+
+def push_release(version):
+    """Push release branch and tags to remote."""
+    branch_name = f"release/{version}"
+    print(f"🚀 Pushing {branch_name} and tags...")
+    
+    # Push branch
+    run_cmd(f"git push origin {branch_name}")
+    
+    # Push tags
+    run_cmd("git push origin --tags")
+    
+    print(f"✅ Pushed {branch_name} and tags to remote")
+
+
+def switch_back_to_original_branch(original_branch):
+    """Switch back to the original branch."""
+    print(f"🔄 Switching back to original branch: {original_branch}")
+    run_cmd(f"git checkout {original_branch}")
+    print(f"✅ Switched back to {original_branch}")
+
+
+def publish_package():
+    """Publish package to PyPI."""
+    print("🚀 Publishing to PyPI...")
+    run_cmd("uv publish")
+    print("✅ Package published to PyPI")
 
 
 def main():
-    """Main release automation workflow."""
+    """Main release workflow."""
     import argparse
-
-    parser = argparse.ArgumentParser(
-        description="Automated release for tarko-agent-ui package"
-    )
-    parser.add_argument(
-        "--version",
-        type=str,
-        help="Specific npm version to release (e.g., 0.3.0-beta.9). If not specified, uses latest.",
-    )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Show what would be done without actually doing it",
-    )
-    parser.add_argument(
-        "--force",
-        action="store_true",
-        help="Force republish even if version is already up to date",
-    )
-
-    args = parser.parse_args()
-
-    print("🚀 Starting automated release process...")
-
-    # Get target npm version
-    if args.version:
-        npm_version = args.version
-        print(f"📦 Using specified version: {npm_version}")
-
-        # Verify specified version exists
-        if not verify_npm_version_exists(npm_version):
-            print(f"❌ Version {npm_version} does not exist on npm")
-            sys.exit(1)
-    else:
-        npm_version = get_npm_latest_version("@tarko/agent-ui-builder")
-        if not npm_version:
-            sys.exit(1)
-        print(f"📦 Using latest npm version: {npm_version}")
-
-    current_version = get_current_python_version()
-    if not current_version:
-        sys.exit(1)
-
-    print(f"🐍 Current Python version: {current_version}")
-
-    # Generate target Python version
-    target_python_version = normalize_npm_version_to_python(npm_version)
-    print(f"🔄 Target Python version: {target_python_version}")
-
-    # Check if update needed (skip for manual version or force flag)
-    if not args.version and not args.force and not should_update_version(current_version, npm_version):
-        print("✅ Already up to date!")
-        print("💡 Use --force to republish anyway")
-        return
     
-    if args.force and current_version == target_python_version:
-        print("🔄 Force republishing current version...")
-        # Increment version to avoid PyPI conflicts
-        target_python_version = increment_version_for_republish(target_python_version)
-        print(f"📦 Using incremented version: {target_python_version}")
-
-    if args.dry_run:
-        print("\n🔍 DRY RUN - Commands that would be executed:")
-        commands = [
-            f"# Update version files to {target_python_version}",
-            f"uv run python scripts/build_assets.py --version='{npm_version}'",
-            "uv run pytest",
-            "uv build",
-            "uv publish",
-            f"git add . && git commit -m 'feat: update to @tarko/agent-ui-builder@{npm_version}'",
-            f"git tag v{target_python_version}",
-            "git push origin main --tags",
-        ]
-        for cmd in commands:
-            print(f"  {cmd}")
-        return
-
-    # Confirm release
-    confirm = input(f"\nProceed with release {target_python_version}? [y/N]: ")
-    if confirm.lower() != "y":
-        print("❌ Release cancelled")
-        return
-
-    # Update version files
-    if not update_all_version_files(target_python_version):
+    parser = argparse.ArgumentParser(description="Optimized Python package release script")
+    parser.add_argument("--npm-version", help="Specific npm version (default: latest)")
+    parser.add_argument("--dry-run", action="store_true", help="Show what would be done")
+    parser.add_argument("--skip-tests", action="store_true", help="Skip running tests")
+    parser.add_argument("--skip-publish", action="store_true", help="Skip publishing to PyPI")
+    
+    args = parser.parse_args()
+    
+    try:
+        # 1. Get current state
+        original_branch = get_current_branch()
+        print(f"🎯 Starting release from branch: {original_branch}")
+        
+        # 2. Determine versions
+        npm_version = args.npm_version or get_npm_latest_version()
+        current_python_version = get_current_python_version()
+        new_python_version = bump_patch_version(current_python_version)
+        
+        print(f"\n📋 Release Plan:")
+        print(f"   📦 npm version: {npm_version}")
+        print(f"   🐍 Python: {current_python_version} -> {new_python_version}")
+        print(f"   🌿 Release branch: release/{new_python_version}")
+        
+        if args.dry_run:
+            print("\n🔍 DRY RUN - No changes will be made")
+            return
+        
+        # 3. Confirm release
+        if input("\n❓ Proceed with release? [y/N]: ").lower() != "y":
+            print("❌ Release cancelled")
+            return
+        
+        print("\n🚀 Starting release process...")
+        
+        # 4. Create release branch
+        create_release_branch(new_python_version)
+        
+        try:
+            # 5. Clean old artifacts
+            clean_old_artifacts()
+            
+            # 6. Update version files
+            update_version_files(new_python_version, npm_version)
+            
+            # 7. Build static assets
+            build_static_assets(npm_version)
+            
+            # 8. Run tests (unless skipped)
+            if not args.skip_tests:
+                run_tests()
+            
+            # 9. Build package
+            build_and_verify_package()
+            
+            # 10. Commit and tag
+            commit_and_tag(new_python_version)
+            
+            # 11. Push to remote
+            push_release(new_python_version)
+            
+            # 12. Publish package (unless skipped)
+            if not args.skip_publish:
+                publish_package()
+            
+            print(f"\n🎉 Successfully released v{new_python_version}!")
+            print(f"📦 npm version: {npm_version}")
+            print(f"🐍 Python version: {new_python_version}")
+            print(f"🌿 Release branch: release/{new_python_version}")
+            
+        finally:
+            # 13. Always switch back to original branch
+            switch_back_to_original_branch(original_branch)
+            
+    except KeyboardInterrupt:
+        print("\n❌ Release interrupted by user")
         sys.exit(1)
-    print(f"📝 Updated version files to {target_python_version}")
-
-    # Release workflow
-    steps = [
-        f"uv run python scripts/build_assets.py --version='{npm_version}'",  # Build assets with specific version
-        "uv run pytest",  # Run tests
-        "rm -rf dist/*",  # Clean dist directory to avoid conflicts
-        "uv build",  # Build package
-        "uv publish",  # Publish to PyPI
-        f"git add . && git commit -m 'feat: update to @tarko/agent-ui-builder@{npm_version}'",
-        f"git tag v{target_python_version}",  # Create git tag
-        "git push origin main --tags",  # Push changes and tags
-    ]
-
-    # Execute release steps
-    for step in steps:
-        if not run_command(step):
-            print(f"❌ Release failed at step: {step}")
-            sys.exit(1)
-
-    print(f"\n🎉 Successfully released {target_python_version}!")
-    print(
-        f"📦 Package: https://pypi.org/project/tarko-agent-ui/{target_python_version}/"
-    )
+    except Exception as e:
+        print(f"\n❌ Release failed: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
