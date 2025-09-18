@@ -15,7 +15,7 @@ except ImportError:
     STATIC_ASSETS_PACKAGE = "@tarko/agent-ui-builder"
 
 
-__version__ = "0.3.3"
+__version__ = "0.3.4"
 __npm_version__ = "0.3.0-beta.12"
 __all__ = ["get_static_path", "get_static_version", "get_agent_ui_html"]
 
