@@ -39,12 +39,12 @@ def handle_missing_assets(e: FileNotFoundError, context: str = "api") -> None:
 
 
 def create_app(
-    base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
+    api_base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
 ) -> FastAPI:
     """Creates FastAPI app with static asset routing.
 
     Args:
-        base_url: Agent API base URL for environment injection
+        api_base_url: Agent API base URL for environment injection
         ui_config: UI configuration object for environment injection
     """
     app = FastAPI(
@@ -57,7 +57,7 @@ def create_app(
     async def root() -> HTMLResponse:
         """Serves the main UI application with injected environment variables."""
         try:
-            html_content = get_agent_ui_html(base_url=base_url, ui_config=ui_config)
+            html_content = get_agent_ui_html(api_base_url=api_base_url, ui_config=ui_config)
             return HTMLResponse(content=html_content)
         except FileNotFoundError as e:
             handle_missing_assets(e, "api")
@@ -92,9 +92,9 @@ def main() -> None:
         print("Warning: Static routes will be unavailable")
 
     # Get base URL from environment variable or use default
-    base_url = os.getenv("AGENT_BASE_URL", "http://localhost:8000/api")
+    api_base_url = os.getenv("AGENT_BASE_URL", "http://localhost:8000/api")
 
-    print(f"Agent Base URL: {base_url}")
+    print(f"Agent Base URL: {api_base_url}")
 
     # Omni Agent UI configuration
     ui_config = {
@@ -135,7 +135,7 @@ def main() -> None:
         "layout": {"enableLayoutSwitchButton": True},
     }
 
-    app = create_app(base_url=base_url, ui_config=ui_config)
+    app = create_app(api_base_url=api_base_url, ui_config=ui_config)
 
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=False, log_level="info")
 

@@ -58,13 +58,13 @@ def get_static_version() -> dict:
 
 
 def inject_env_variables(
-    html_content: str, base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
+    html_content: str, api_base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
 ) -> str:
     """Injects environment variables into HTML head section.
 
     Args:
         html_content: The HTML content to modify
-        base_url: Agent API base URL (defaults to empty string)
+        api_base_url: Agent API base URL (defaults to empty string)
         ui_config: UI configuration object (defaults to empty dict)
 
     Returns:
@@ -77,7 +77,7 @@ def inject_env_variables(
         ui_config = {}
 
     script_tag = f"""<script>
-      window.AGENT_BASE_URL = {json.dumps(base_url)};
+      window.AGENT_BASE_URL = {json.dumps(api_base_url)};
       window.AGENT_WEB_UI_CONFIG = {json.dumps(ui_config)};
       console.log("Agent: Using API baseURL:", window.AGENT_BASE_URL);
     </script>"""
@@ -102,12 +102,12 @@ def inject_env_variables(
 
 
 def get_agent_ui_html(
-    base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
+    api_base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
 ) -> str:
     """Returns configured Agent UI HTML content.
 
     Args:
-        base_url: Agent API base URL (defaults to empty string)
+        api_base_url: Agent API base URL (defaults to empty string)
         ui_config: UI configuration object (defaults to empty dict)
 
     Returns:
@@ -125,5 +125,5 @@ def get_agent_ui_html(
 
     html_content = index_file.read_text(encoding="utf-8")
     return inject_env_variables(
-        html_content=html_content, base_url=base_url, ui_config=ui_config
+        html_content=html_content, api_base_url=api_base_url, ui_config=ui_config
     )

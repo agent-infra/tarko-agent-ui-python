@@ -60,7 +60,7 @@ class TestInjectEnvVariables:
     def test_inject_basic_variables(self):
         """Test basic environment variable injection."""
         html = "<html><head></head><body></body></html>"
-        result = inject_env_variables(html, "http://api.example.com")
+        result = inject_env_variables(html, api_base_url="http://api.example.com")
 
         assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
         assert "window.AGENT_WEB_UI_CONFIG = {}" in result
@@ -69,7 +69,7 @@ class TestInjectEnvVariables:
         """Test injection with UI configuration."""
         html = "<html><head></head><body></body></html>"
         ui_config = {"title": "Test Agent"}
-        result = inject_env_variables(html, "http://api.example.com", ui_config)
+        result = inject_env_variables(html, api_base_url="http://api.example.com", ui_config=ui_config)
 
         assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
         assert '"title": "Test Agent"' in result
@@ -81,7 +81,7 @@ class TestInjectEnvVariables:
         with pytest.raises(
             ValueError, match="HTML content must contain a valid <head> section"
         ):
-            inject_env_variables(html, "http://api.example.com")
+            inject_env_variables(html, api_base_url="http://api.example.com")
 
 
 class TestGetAgentUIHTML:
@@ -100,7 +100,7 @@ class TestGetAgentUIHTML:
             mock_index_file.exists.return_value = True
             mock_index_file.read_text.return_value = mock_html
 
-            result = get_agent_ui_html("http://api.example.com", {"title": "Test"})
+            result = get_agent_ui_html(api_base_url="http://api.example.com", ui_config={"title": "Test"})
 
             assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
             assert '"title": "Test"' in result
