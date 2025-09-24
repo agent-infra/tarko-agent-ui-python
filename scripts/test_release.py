@@ -25,43 +25,45 @@ def run_cmd(cmd, cwd=None, check=True, capture_output=True):
     print("🔧 {}".format(cmd))
     if cwd:
         print("   📁 in {}".format(cwd))
-    
+
     # Use Popen for compatibility
     if capture_output:
-        process = subprocess.Popen(cmd, shell=True, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(
+            cmd, shell=True, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
         stdout, stderr = process.communicate()
-        
+
         # Convert bytes to string for Python 2/3 compatibility
-        if hasattr(stdout, 'decode'):
-            stdout = stdout.decode('utf-8')
-            stderr = stderr.decode('utf-8')
-        
+        if hasattr(stdout, "decode"):
+            stdout = stdout.decode("utf-8")
+            stderr = stderr.decode("utf-8")
+
         # Create a simple result object
         class Result:
             def __init__(self, returncode, stdout, stderr):
                 self.returncode = returncode
                 self.stdout = stdout
                 self.stderr = stderr
-        
+
         result = Result(process.returncode, stdout, stderr)
     else:
         result = subprocess.call(cmd, shell=True, cwd=cwd)
-        
+
         class Result:
             def __init__(self, returncode):
                 self.returncode = returncode
                 self.stdout = ""
                 self.stderr = ""
-        
+
         result = Result(result)
-    
+
     if check and result.returncode != 0:
         print("❌ Command failed: {}".format(cmd))
         if capture_output:
             print("stdout: {}".format(result.stdout))
             print("stderr: {}".format(result.stderr))
         sys.exit(1)
-    
+
     return result
 
 
@@ -69,44 +71,51 @@ def get_current_version():
     """Get current version from pyproject.toml."""
     if not os.path.exists("pyproject.toml"):
         raise FileNotFoundError("pyproject.toml not found")
-    
+
     with open("pyproject.toml", "r") as f:
         content = f.read()
     import re
+
     match = re.search(r'version = "([^"]+)"', content)
     if not match:
         raise ValueError("Could not find version in pyproject.toml")
-    
+
     return match.group(1)
 
 
 def wait_for_pypi_availability(package_name, version, max_wait=300):
     """Wait for package to be available on PyPI.
-    
+
     Args:
         package_name: Name of the package
         version: Version to check for
         max_wait: Maximum time to wait in seconds
-        
+
     Returns:
         True if package is available, False if timeout
     """
-    print("⏳ Waiting for {}=={} to be available on PyPI...".format(package_name, version))
-    
+    print(
+        "⏳ Waiting for {}=={} to be available on PyPI...".format(package_name, version)
+    )
+
     start_time = time.time()
     while time.time() - start_time < max_wait:
         try:
             url = "https://pypi.org/pypi/{}/{}/json".format(package_name, version)
             response = requests.get(url, timeout=10)
             if response.status_code == 200:
-                print("✅ Package {}=={} is available on PyPI".format(package_name, version))
+                print(
+                    "✅ Package {}=={} is available on PyPI".format(
+                        package_name, version
+                    )
+                )
                 return True
         except requests.RequestException:
             pass
-        
+
         print("   ⏳ Still waiting... ({}s)".format(int(time.time() - start_time)))
         time.sleep(10)
-    
+
     print("❌ Timeout waiting for package on PyPI after {}s".format(max_wait))
     return False
 
@@ -114,13 +123,13 @@ def wait_for_pypi_availability(package_name, version, max_wait=300):
 def create_test_environment():
     """Create a clean test environment."""
     print("🏗️  Creating clean test environment...")
-    
+
     test_dir = tempfile.mkdtemp(prefix="tarko_release_test_")
     print("📁 Test directory: {}".format(test_dir))
-    
+
     # Create a simple Python environment
     run_cmd("python -m venv test_env", cwd=test_dir)
-    
+
     return test_dir
 
 
@@ -143,18 +152,18 @@ def get_python_path(test_dir):
 def install_package(test_dir, package_name, version):
     """Install package in test environment."""
     print("📦 Installing {}=={} in test environment...".format(package_name, version))
-    
+
     pip_path = get_pip_path(test_dir)
-    
+
     # Upgrade pip first
     run_cmd("{} install --upgrade pip".format(pip_path), cwd=test_dir)
-    
+
     # Install the package
     run_cmd("{} install {}=={}".format(pip_path, package_name, version), cwd=test_dir)
-    
+
     # Install additional dependencies for testing
     run_cmd("{} install fastapi uvicorn requests".format(pip_path), cwd=test_dir)
-    
+
     print("✅ Installed {}=={}".format(package_name, version))
 
 
@@ -283,11 +292,11 @@ def main():
 if __name__ == "__main__":
     main()
 '''
-    
+
     test_script_path = os.path.join(test_dir, "test_functionality.py")
     with open(test_script_path, "w") as f:
         f.write(test_script_content)
-    
+
     return test_script_path
 
 
@@ -399,31 +408,35 @@ def main():
 if __name__ == "__main__":
     main()
 '''
-    
+
     server_script_path = os.path.join(test_dir, "test_server.py")
     with open(server_script_path, "w") as f:
         f.write(server_script_content)
-    
+
     return server_script_path
 
 
 def run_functionality_tests(test_dir, test_script_path):
     """Run functionality tests in the test environment."""
     print("🧪 Running functionality tests...")
-    
+
     python_path = get_python_path(test_dir)
-    result = run_cmd("{} {}".format(python_path, test_script_path), cwd=test_dir, check=False)
-    
+    result = run_cmd(
+        "{} {}".format(python_path, test_script_path), cwd=test_dir, check=False
+    )
+
     return result.returncode == 0
 
 
 def run_server_tests(test_dir, server_script_path):
     """Run server tests in the test environment."""
     print("🧪 Running server tests...")
-    
+
     python_path = get_python_path(test_dir)
-    result = run_cmd("{} {}".format(python_path, server_script_path), cwd=test_dir, check=False)
-    
+    result = run_cmd(
+        "{} {}".format(python_path, server_script_path), cwd=test_dir, check=False
+    )
+
     return result.returncode == 0
 
 
@@ -432,6 +445,7 @@ def cleanup_test_environment(test_dir):
     print("🧹 Cleaning up test environment: {}".format(test_dir))
     try:
         import shutil
+
         shutil.rmtree(test_dir)
         print("✅ Test environment cleaned up")
     except Exception as e:
@@ -441,74 +455,90 @@ def cleanup_test_environment(test_dir):
 def main():
     """Main test workflow."""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Test released package functionality")
     parser.add_argument("--version", help="Specific version to test (default: current)")
-    parser.add_argument("--package-name", default="tarko-agent-ui", help="Package name to test")
-    parser.add_argument("--skip-wait", action="store_true", help="Skip waiting for PyPI availability")
-    parser.add_argument("--keep-env", action="store_true", help="Keep test environment after testing")
-    parser.add_argument("--quick", action="store_true", help="Skip server tests (faster)")
-    
+    parser.add_argument(
+        "--package-name", default="tarko-agent-ui", help="Package name to test"
+    )
+    parser.add_argument(
+        "--skip-wait", action="store_true", help="Skip waiting for PyPI availability"
+    )
+    parser.add_argument(
+        "--keep-env", action="store_true", help="Keep test environment after testing"
+    )
+    parser.add_argument(
+        "--quick", action="store_true", help="Skip server tests (faster)"
+    )
+
     args = parser.parse_args()
-    
+
     try:
         # Determine version to test
         version = args.version or get_current_version()
         print("🎯 Testing {}=={}".format(args.package_name, version))
-        
+
         # Wait for package availability on PyPI (unless skipped)
         if not args.skip_wait:
             if not wait_for_pypi_availability(args.package_name, version):
                 print("❌ Package not available on PyPI")
                 sys.exit(1)
-        
+
         # Create test environment
         test_dir = create_test_environment()
-        
+
         try:
             # Install package
             install_package(test_dir, args.package_name, version)
-            
+
             # Create test scripts
             test_script_path = create_test_script(test_dir)
             server_script_path = create_server_test_script(test_dir)
-            
+
             # Run functionality tests
             functionality_passed = run_functionality_tests(test_dir, test_script_path)
-            
+
             # Run server tests (unless quick mode)
             server_passed = True
             if not args.quick:
                 server_passed = run_server_tests(test_dir, server_script_path)
             else:
                 print("⏩ Skipping server tests (quick mode)")
-            
+
             # Report results
-            print("\n" + "="*50)
+            print("\n" + "=" * 50)
             print("📊 RELEASE TEST RESULTS")
-            print("="*50)
+            print("=" * 50)
             print("📦 Package: {}=={}".format(args.package_name, version))
-            print("🧪 Functionality tests: {}".format('✅ PASSED' if functionality_passed else '❌ FAILED'))
-            
+            print(
+                "🧪 Functionality tests: {}".format(
+                    "✅ PASSED" if functionality_passed else "❌ FAILED"
+                )
+            )
+
             if not args.quick:
-                print("🌐 Server tests: {}".format('✅ PASSED' if server_passed else '❌ FAILED'))
-            
+                print(
+                    "🌐 Server tests: {}".format(
+                        "✅ PASSED" if server_passed else "❌ FAILED"
+                    )
+                )
+
             if functionality_passed and server_passed:
                 print("\n🎉 ALL TESTS PASSED! Release is ready for use.")
                 exit_code = 0
             else:
                 print("\n❌ SOME TESTS FAILED! Please investigate.")
                 exit_code = 1
-            
+
         finally:
             # Clean up test environment (unless keeping)
             if not args.keep_env:
                 cleanup_test_environment(test_dir)
             else:
                 print("🔒 Keeping test environment: {}".format(test_dir))
-        
+
         sys.exit(exit_code)
-        
+
     except KeyboardInterrupt:
         print("\n❌ Testing interrupted by user")
         sys.exit(1)

@@ -58,7 +58,9 @@ def get_static_version() -> dict:
 
 
 def inject_env_variables(
-    html_content: str, api_base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
+    html_content: str,
+    api_base_url: str = "",
+    ui_config: Optional[Dict[str, Any]] = None,
 ) -> str:
     """Injects environment variables into HTML head section.
 

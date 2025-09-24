@@ -69,7 +69,9 @@ class TestInjectEnvVariables:
         """Test injection with UI configuration."""
         html = "<html><head></head><body></body></html>"
         ui_config = {"title": "Test Agent"}
-        result = inject_env_variables(html, api_base_url="http://api.example.com", ui_config=ui_config)
+        result = inject_env_variables(
+            html, api_base_url="http://api.example.com", ui_config=ui_config
+        )
 
         assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
         assert '"title": "Test Agent"' in result
@@ -100,7 +102,9 @@ class TestGetAgentUIHTML:
             mock_index_file.exists.return_value = True
             mock_index_file.read_text.return_value = mock_html
 
-            result = get_agent_ui_html(api_base_url="http://api.example.com", ui_config={"title": "Test"})
+            result = get_agent_ui_html(
+                api_base_url="http://api.example.com", ui_config={"title": "Test"}
+            )
 
             assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
             assert '"title": "Test"' in result
