@@ -23,8 +23,11 @@ def run_cmd(cmd, check=True):
 
     # Convert bytes to string for Python 2/3 compatibility
     if hasattr(stdout, "decode"):
-        stdout = stdout.decode("utf-8")
-        stderr = stderr.decode("utf-8")
+        stdout_str: str = stdout.decode("utf-8")  # type: ignore
+        stderr_str: str = stderr.decode("utf-8")  # type: ignore
+    else:
+        stdout_str = str(stdout)
+        stderr_str = str(stderr)
 
     # Create a simple result object
     class Result:
@@ -33,7 +36,7 @@ def run_cmd(cmd, check=True):
             self.stdout = stdout
             self.stderr = stderr
 
-    result = Result(process.returncode, stdout, stderr)
+    result = Result(process.returncode, stdout_str, stderr_str)
 
     if check and result.returncode != 0:
         print("❌ Command failed: {}".format(cmd))

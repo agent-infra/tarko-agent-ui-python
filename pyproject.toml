@@ -44,8 +44,8 @@ tarko_agent_ui = ["static/**/*"]
 
 
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
     "black>=22.0.0",
@@ -58,7 +58,7 @@ dev-dependencies = [
 ]
 
 [tool.pytest.ini_options]
-minversion = "0.3.4"
+minversion = "7.0"
 addopts = ["-ra", "--cov=tarko_agent_ui"]
 testpaths = ["tests"]
 
@@ -78,7 +78,7 @@ exclude = '''
 '''
 
 [tool.mypy]
-python_version = "0.3.4"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 check_untyped_defs = true
