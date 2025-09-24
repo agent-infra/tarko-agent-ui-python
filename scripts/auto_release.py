@@ -23,8 +23,8 @@ def run_cmd(cmd, check=True):
 
     # Convert bytes to string for Python 2/3 compatibility
     if hasattr(stdout, "decode"):
-        stdout_str: str = stdout.decode("utf-8")  # type: ignore
-        stderr_str: str = stderr.decode("utf-8")  # type: ignore
+        stdout_str = stdout.decode("utf-8")
+        stderr_str = stderr.decode("utf-8")
     else:
         stdout_str = str(stdout)
         stderr_str = str(stderr)
@@ -130,11 +130,15 @@ def update_version_files(python_version, npm_version):
         )
     )
 
-    # Update pyproject.toml
+    # Update pyproject.toml - only update project version, not tool versions
     with open("pyproject.toml", "r") as f:
         content = f.read()
+    # Use more specific regex to target only the [project] section version
     content = re.sub(
-        r'version = "[^"]+"', 'version = "{}"'.format(python_version), content
+        r'(\[project\][^\[]*?)version = "[^"]+"', 
+        r'\1version = "{}"'.format(python_version), 
+        content, 
+        flags=re.DOTALL
     )
     with open("pyproject.toml", "w") as f:
         f.write(content)
