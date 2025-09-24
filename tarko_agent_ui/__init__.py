@@ -80,7 +80,7 @@ def inject_env_variables(
     # Handle backwards compatibility with ui_config
     if ui_config is not None and webui is not None:
         raise ValueError("Cannot specify both ui_config and webui. Use webui instead.")
-    
+
     # Use webui if provided, otherwise fall back to ui_config for backwards compatibility
     config = webui if webui is not None else (ui_config or {})
 
@@ -110,7 +110,7 @@ def inject_env_variables(
 
 
 def get_agent_ui_html(
-    api_base_url: str = "", 
+    api_base_url: str = "",
     ui_config: Optional[Dict[str, Any]] = None,
     webui: Optional[Dict[str, Any]] = None,
 ) -> str:
@@ -136,8 +136,8 @@ def get_agent_ui_html(
 
     html_content = index_file.read_text(encoding="utf-8")
     return inject_env_variables(
-        html_content=html_content, 
-        api_base_url=api_base_url, 
+        html_content=html_content,
+        api_base_url=api_base_url,
         ui_config=ui_config,
-        webui=webui
+        webui=webui,
     )
