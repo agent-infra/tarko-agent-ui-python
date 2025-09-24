@@ -57,7 +57,9 @@ def create_app(
     async def root() -> HTMLResponse:
         """Serves the main UI application with injected environment variables."""
         try:
-            html_content = get_agent_ui_html(api_base_url=api_base_url, ui_config=ui_config)
+            html_content = get_agent_ui_html(
+                api_base_url=api_base_url, ui_config=ui_config
+            )
             return HTMLResponse(content=html_content)
         except FileNotFoundError as e:
             handle_missing_assets(e, "api")
