@@ -39,13 +39,13 @@ def handle_missing_assets(e: FileNotFoundError, context: str = "api") -> None:
 
 
 def create_app(
-    api_base_url: str = "", ui_config: Optional[Dict[str, Any]] = None
+    api_base_url: str = "", webui: Optional[Dict[str, Any]] = None
 ) -> FastAPI:
     """Creates FastAPI app with static asset routing.
 
     Args:
         api_base_url: Agent API base URL for environment injection
-        ui_config: UI configuration object for environment injection
+        webui: Web UI configuration object for environment injection
     """
     app = FastAPI(
         title="Tarko Agent UI Server",
@@ -58,7 +58,7 @@ def create_app(
         """Serves the main UI application with injected environment variables."""
         try:
             html_content = get_agent_ui_html(
-                api_base_url=api_base_url, ui_config=ui_config
+                api_base_url=api_base_url, webui=webui
             )
             return HTMLResponse(content=html_content)
         except FileNotFoundError as e:
@@ -99,7 +99,7 @@ def main() -> None:
     print(f"Agent Base URL: {api_base_url}")
 
     # Omni Agent UI configuration
-    ui_config = {
+    webui = {
         "logo": "https://lf3-static.bytednsdoc.com/obj/eden-cn/zyha-aulnh/ljhwZthlaukjlkulzlp/icon.png",
         "title": "Omni Agent",
         "subtitle": "Offering seamless integration with a wide range of real-world tools.",
@@ -137,7 +137,7 @@ def main() -> None:
         "layout": {"enableLayoutSwitchButton": True},
     }
 
-    app = create_app(api_base_url=api_base_url, ui_config=ui_config)
+    app = create_app(api_base_url=api_base_url, webui=webui)
 
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=False, log_level="info")
 

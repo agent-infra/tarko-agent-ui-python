@@ -65,16 +65,40 @@ class TestInjectEnvVariables:
         assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
         assert "window.AGENT_WEB_UI_CONFIG = {}" in result
 
-    def test_inject_with_ui_config(self):
-        """Test injection with UI configuration."""
+    def test_inject_with_webui_config(self):
+        """Test injection with webui configuration."""
         html = "<html><head></head><body></body></html>"
-        ui_config = {"title": "Test Agent"}
+        webui = {"title": "Test Agent"}
+        result = inject_env_variables(
+            html, api_base_url="http://api.example.com", webui=webui
+        )
+
+        assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
+        assert '"title": "Test Agent"' in result
+
+    def test_inject_with_both_configs_raises_error(self):
+        """Test that providing both ui_config and webui raises ValueError."""
+        html = "<html><head></head><body></body></html>"
+        ui_config = {"title": "Old Config"}
+        webui = {"title": "New Config"}
+        
+        with pytest.raises(
+            ValueError, match="Cannot specify both ui_config and webui"
+        ):
+            inject_env_variables(
+                html, api_base_url="http://api.example.com", ui_config=ui_config, webui=webui
+            )
+
+    def test_inject_backwards_compatibility(self):
+        """Test that ui_config still works for backwards compatibility."""
+        html = "<html><head></head><body></body></html>"
+        ui_config = {"title": "Legacy Config"}
         result = inject_env_variables(
             html, api_base_url="http://api.example.com", ui_config=ui_config
         )
 
         assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
-        assert '"title": "Test Agent"' in result
+        assert '"title": "Legacy Config"' in result
 
     def test_inject_missing_head_raises_error(self):
         """Test that HTML without head section raises ValueError."""
@@ -89,8 +113,8 @@ class TestInjectEnvVariables:
 class TestGetAgentUIHTML:
     """Test get_agent_ui_html function."""
 
-    def test_html_generation_with_mock_file(self):
-        """Test HTML generation with mocked static files."""
+    def test_html_generation_with_webui(self):
+        """Test HTML generation with webui configuration."""
         mock_html = "<html><head></head><body>Test UI</body></html>"
 
         with patch("tarko_agent_ui.get_static_path") as mock_get_path, patch(
@@ -103,11 +127,32 @@ class TestGetAgentUIHTML:
             mock_index_file.read_text.return_value = mock_html
 
             result = get_agent_ui_html(
-                api_base_url="http://api.example.com", ui_config={"title": "Test"}
+                api_base_url="http://api.example.com", webui={"title": "Test"}
             )
 
             assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
             assert '"title": "Test"' in result
+            assert "Test UI" in result
+
+    def test_html_generation_backwards_compatibility(self):
+        """Test HTML generation with legacy ui_config."""
+        mock_html = "<html><head></head><body>Test UI</body></html>"
+
+        with patch("tarko_agent_ui.get_static_path") as mock_get_path, patch(
+            "tarko_agent_ui.Path"
+        ) as mock_path_class:
+
+            mock_get_path.return_value = "/mock/static"
+            mock_index_file = mock_path_class.return_value / "index.html"
+            mock_index_file.exists.return_value = True
+            mock_index_file.read_text.return_value = mock_html
+
+            result = get_agent_ui_html(
+                api_base_url="http://api.example.com", ui_config={"title": "Legacy"}
+            )
+
+            assert 'window.AGENT_BASE_URL = "http://api.example.com"' in result
+            assert '"title": "Legacy"' in result
             assert "Test UI" in result
 
     def test_html_missing_static_raises_error(self):
