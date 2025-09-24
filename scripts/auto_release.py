@@ -135,10 +135,10 @@ def update_version_files(python_version, npm_version):
         content = f.read()
     # Use more specific regex to target only the [project] section version
     content = re.sub(
-        r'(\[project\][^\[]*?)version = "[^"]+"', 
-        r'\1version = "{}"'.format(python_version), 
-        content, 
-        flags=re.DOTALL
+        r'(\[project\][^\[]*?)version = "[^"]+"',
+        r'\1version = "{}"'.format(python_version),
+        content,
+        flags=re.DOTALL,
     )
     with open("pyproject.toml", "w") as f:
         f.write(content)
