@@ -18,6 +18,7 @@ import tempfile
 import time
 import os
 import requests
+from typing import Union
 
 
 def run_cmd(cmd, cwd=None, check=True, capture_output=True):
@@ -35,36 +36,41 @@ def run_cmd(cmd, cwd=None, check=True, capture_output=True):
 
         # Convert bytes to string for Python 2/3 compatibility
         if hasattr(stdout, "decode"):
-            stdout = stdout.decode("utf-8")
-            stderr = stderr.decode("utf-8")
+            stdout_str: str = stdout.decode("utf-8")  # type: ignore
+            stderr_str: str = stderr.decode("utf-8")  # type: ignore
+        else:
+            stdout_str = str(stdout)
+            stderr_str = str(stderr)
 
         # Create a simple result object
         class Result:
-            def __init__(self, returncode, stdout, stderr):
+            def __init__(self, returncode: int, stdout: str, stderr: str):
                 self.returncode = returncode
                 self.stdout = stdout
                 self.stderr = stderr
 
-        result = Result(process.returncode, stdout, stderr)
+        result_obj: Union[Result, "SimpleResult"] = Result(
+            process.returncode, stdout_str, stderr_str
+        )
     else:
-        result = subprocess.call(cmd, shell=True, cwd=cwd)
+        call_result = subprocess.call(cmd, shell=True, cwd=cwd)
 
-        class Result:
-            def __init__(self, returncode):
+        class SimpleResult:
+            def __init__(self, returncode: int):
                 self.returncode = returncode
                 self.stdout = ""
                 self.stderr = ""
 
-        result = Result(result)
+        result_obj = SimpleResult(call_result)
 
-    if check and result.returncode != 0:
+    if check and result_obj.returncode != 0:
         print("❌ Command failed: {}".format(cmd))
         if capture_output:
-            print("stdout: {}".format(result.stdout))
-            print("stderr: {}".format(result.stderr))
+            print("stdout: {}".format(result_obj.stdout))
+            print("stderr: {}".format(result_obj.stderr))
         sys.exit(1)
 
-    return result
+    return result_obj
 
 
 def get_current_version():
@@ -231,9 +237,9 @@ def test_html_generation():
     try:
         from tarko_agent_ui import get_agent_ui_html
         
-        # Test basic HTML generation
+        # Test HTML generation with environment injection.
         html_content = get_agent_ui_html(
-            base_url="http://localhost:8000/api",
+            api_base_url="http://localhost:8000/api",
             ui_config={"title": "Test App", "test": True}
         )
         
@@ -330,7 +336,7 @@ def test_server():
         async def root():
             return HTMLResponse(
                 content=get_agent_ui_html(
-                    base_url="http://localhost:8001/api",
+                    api_base_url="http://localhost:8001/api",
                     ui_config={"title": "Test Release"}
                 )
             )
