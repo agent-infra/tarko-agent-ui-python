@@ -81,12 +81,13 @@ class TestInjectEnvVariables:
         html = "<html><head></head><body></body></html>"
         ui_config = {"title": "Old Config"}
         webui = {"title": "New Config"}
-        
-        with pytest.raises(
-            ValueError, match="Cannot specify both ui_config and webui"
-        ):
+
+        with pytest.raises(ValueError, match="Cannot specify both ui_config and webui"):
             inject_env_variables(
-                html, api_base_url="http://api.example.com", ui_config=ui_config, webui=webui
+                html,
+                api_base_url="http://api.example.com",
+                ui_config=ui_config,
+                webui=webui,
             )
 
     def test_inject_backwards_compatibility(self):
